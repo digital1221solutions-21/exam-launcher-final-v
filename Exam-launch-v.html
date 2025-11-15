@@ -1,0 +1,3333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWA</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Global Font Size Reduction */
+        html {
+            font-size: 85%; /* MODIFIED: Increased font size */
+        }
+
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #f5f7fa;
+            --gray: #95a5a6;
+            --admin: #3498db;
+            --teacher: #9b59b6;
+            --student: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: lightgray;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        /* NEW: Added admin-specific layout rules */
+        body.is-admin .admin-only {
+            display: flex;
+        }
+        body:not(.is-admin) .admin-only {
+            display: none;
+        }
+        body:not(.is-admin) .admin-action-header,
+        body:not(.is-admin) .admin-action-cell {
+            display: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px; 
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            height: 80px; 
+            width: 100%; /* Ensure full width */
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px; 
+        }
+        
+        .mobile-nav-toggle {
+            display: none; 
+            font-size: 1.5rem;
+            margin-right: 0; 
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon-wrapper {
+            width: 45px;
+            height: 45px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .logo h1 {
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 100%;
+        }
+        
+        .user-details-text {
+            /* This will help center the name vertically */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .user-email {
+            display: none; /* Hide email as requested */
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            background: transparent;
+            color: var(--gray);
+            border: 1px solid #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            height: 40px;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        /* Auth Styles */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            margin-top: 20px; /* MODIFIED: Pushed card down */
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px; /* MODIFIED: Was 40px */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        /* NEW: Auth Header Layout */
+        .auth-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px 15px 15px; /* Padding for spacing */
+            margin-bottom: 10px;
+        }
+        
+        .auth-header-title {
+            flex-grow: 1;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .awa-logo-auth {
+            /* position: absolute;
+            top: 10px;
+            left: 10px; */
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 1.2rem;
+            border: 2px solid var(--primary);
+            padding: 5px 8px; /* Slightly more padding */
+            border-radius: 4px;
+            background: rgba(255,255,255,0.9);
+            line-height: 1; /* Ensure tight box */
+        }
+        
+        .auth-card .logo-icon-wrapper {
+            /* position: absolute;
+            top: 10px;
+            right: 10px; */
+            width: 45px; /* Ensure size */
+            height: 45px;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        
+        .awa-logo-header {
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 1.2rem;
+            border: 2px solid var(--primary);
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-right: 10px;
+            display: none; 
+        }
+        
+        /* MODIFIED: Auth Card styles to position icon top right */
+        .auth-card .logo {
+            /* justify-content: center;
+            margin-bottom: 20px;
+            margin-top: 20px; 
+            visibility: hidden;  */
+            display: none; /* Replaced by auth-header */
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .auth-tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative; /* For loading spinner */
+            min-height: 44px; /* Ensure height consistency */
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* NEW: Loading spinner */
+        .btn .btn-text {
+            transition: opacity 0.2s ease;
+        }
+        .btn .spinner {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .btn.loading .btn-text {
+            opacity: 0;
+        }
+        .btn.loading .spinner {
+            display: block;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .btn-success {
+            background: var(--secondary);
+        }
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        .btn-warning {
+            background: var(--warning);
+        }
+        .btn-warning:hover {
+            background: #d35400;
+        }
+
+        .btn i {
+            font-size: 0.9rem;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            height: 100%; 
+            position: relative; 
+        }
+        
+        .sidebar-close {
+            display: none; 
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+        }
+
+        .user-role {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .role-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .role-admin { background: var(--admin); }
+        .role-teacher { background: var(--teacher); }
+        .role-student { background: var(--student); }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            min-height: 60vh;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .content-header h2 {
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            width: auto;
+            padding: 10px 20px;
+        }
+        
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--gray);
+            transition: color 0.2s ease;
+        }
+        .btn-icon:hover {
+            color: var(--primary);
+        }
+        .btn-icon.danger:hover {
+            color: var(--danger);
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* MODIFIED: Two per row */
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-card.clickable {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .stat-card.clickable:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card.teacher { border-left-color: var(--teacher); }
+        .stat-card.student { border-left-color: var(--student); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            /* MODIFIED: Added for z-index fix */
+            position: relative;
+            z-index: 2; 
+        }
+        
+        /* NEW: Scrollable list for user tables */
+        .table-container.scrollable-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: none;
+        }
+        .table-container.scrollable-list.expanded {
+            max-height: 400px;
+        }
+         .table-container.scrollable-list table {
+            border: none;
+         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: normal; 
+            word-break: break-word;
+            vertical-align: middle; 
+        }
+        
+        tr td:first-child,
+        tr th:first-child {
+            padding-left: 20px;
+        }
+        tr td:last-child,
+        tr th:last-child {
+            padding-right: 20px;
+        }
+
+        th {
+            background: var(--light);
+            color: var(--dark);
+            font-weight: 600;
+            white-space: nowrap; /* Keep headers on one line */
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        /* NEW: Empty state row */
+        .empty-state-row {
+            text-align: center;
+            color: var(--gray);
+            font-style: italic;
+        }
+        .empty-state-row td {
+            padding: 40px;
+        }
+        .empty-state-row i {
+            display: block;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; } /* MODIFIED: Swapped with completed */
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+        .status-deactivated { background: #fff3cd; color: #856404; } /* NEW: Deactivated */
+
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary);
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+        .action-btn:hover { color: #2980b9; }
+        .action-btn.reject-exam { color: var(--danger); }
+        .action-btn.reject-exam:hover { color: #c0392b; }
+        .action-btn.edit-exam { color: var(--warning); }
+        .action-btn.edit-exam:hover { color: #d35400; }
+        
+        /* NEW: Action button colors for user status */
+        .action-btn.deactivate-user { color: var(--danger); }
+        .action-btn.deactivate-user:hover { color: #c0392b; }
+        .action-btn.activate-user { color: var(--secondary); }
+        .action-btn.activate-user:hover { color: #27ae60; }
+
+
+        /* NEW: Align resources cell to the right */
+        .resources-cell {
+            text-align: right;
+        }
+
+        /* Exam Interface */
+        .exam-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .exam-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .exam-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option:hover {
+            background: #f5f5f5;
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #e3f2fd;
+        }
+        
+        .option input[type="radio"] {
+            display: none;
+        }
+
+        .exam-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            text-align: center; 
+            padding: 40px; 
+            background: #f8f9fa; 
+            border-radius: 12px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto; 
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px; 
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-content.mini {
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        /* NEW: Confirmation Modal styles */
+        #confirmationModal .modal-icon {
+            font-size: 3rem;
+            color: var(--warning);
+            margin-bottom: 15px;
+        }
+        #confirmationModal .modal-icon.danger {
+            color: var(--danger);
+        }
+        #confirmationModal h3 {
+            margin-bottom: 10px;
+        }
+        #confirmationModal p {
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        #confirmationModal .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        #confirmationModal .modal-actions .btn {
+            width: 100%;
+        }
+
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Exam Editor Styles */
+        .question-editor-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        .add-question-form {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 10px;
+        }
+        
+        .add-question-form h3 {
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .option-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .option-input-group input[type="radio"] {
+            flex-shrink: 0;
+        }
+        
+        .option-input-group input[type="text"] {
+            flex-grow: 1;
+        }
+        
+        .question-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .question-list-item {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+        }
+        
+        /* NEW: Empty state for question list */
+        #questionList.empty-list {
+            padding: 40px 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            text-align: center;
+            color: var(--gray);
+            border: 2px dashed #eee;
+        }
+        #questionList.empty-list::before {
+            content: "\f055"; /* FontAwesome plus-circle */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+        #questionList.empty-list::after {
+            content: "No questions added. Use the form to add your first question.";
+            font-style: italic;
+            display: block;
+        }
+        
+        .question-list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .question-list-item-header h4 {
+            color: var(--dark);
+            font-weight: 600;
+            max-width: 80%;
+        }
+        
+        .question-list-item-options {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .question-list-item-options li {
+            margin-bottom: 5px;
+            color: var(--gray);
+        }
+        
+        .question-list-item-options li.correct {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* Overlay for mobile menu */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .overlay.open {
+            display: block;
+            opacity: 1;
+        }
+
+        /* NEW STYLES FOR BULK UPLOAD */
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        .iframe-preview {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        /* NEW: Toast Notification */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: white;
+            color: var(--dark);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--primary);
+            transform: translateX(120%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left-color: var(--secondary); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.info i { color: var(--primary); }
+
+        /* Responsive Utilities */
+        .desktop-text { display: inline; }
+        .mobile-text { display: none; }
+        
+        /* --- ACTION MENU (ALWAYS DROPDOWN) --- */
+        .action-wrapper {
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; /* Align trigger to the right */
+            width: 100%; 
+            position: relative; 
+            /* MODIFIED: Added for z-index fix */
+            z-index: 5;
+        }
+        .action-label {
+            display: none; /* No longer used */
+        }
+        .mobile-menu-trigger {
+            background: none;
+            border: none;
+            font-size: 1.5rem; 
+            color: var(--dark);
+            padding: 0 5px; 
+            cursor: pointer;
+            display: block; /* Always visible */
+            margin-left: auto; /* Push to far right */
+        }
+        .action-buttons {
+            display: none; /* Dropdown is hidden by default */
+            position: absolute;
+            top: 100%; 
+            right: 0;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            flex-direction: column;
+            padding: 5px;
+            z-index: 10;
+            min-width: 130px; /* More space for text */
+            align-items: flex-start;
+        }
+        .action-buttons .action-btn {
+            width: 100%;
+            text-align: left;
+            justify-content: flex-start;
+            padding: 8px 10px;
+            color: var(--dark);
+            margin: 0; 
+            gap: 10px; /* Space between icon and text */
+        }
+        .action-buttons .action-btn:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+        
+        .action-buttons.show {
+            display: flex; /* Class to show the dropdown */
+        }
+        
+        /* NEW: Drop-up menu */
+        .action-buttons.drop-up {
+            bottom: 100%; /* Position above trigger */
+            top: auto;
+        }
+
+        /* --- RESPONSIVE STYLES --- */
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                height: 100vh;
+                z-index: 2000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                width: 280px;
+                overflow-y: auto;
+                box-shadow: 0 0 20px rgba(0,0,0,0.2);
+                border-radius: 0; 
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-close {
+                display: block;
+            }
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            /* Show AWA Logo next to hamburger */
+            .awa-logo-header {
+                display: inline-block;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .container { padding: 10px; }
+            
+            header { 
+                padding: 10px 15px; 
+                margin-bottom: 20px; 
+                height: auto; 
+                flex-wrap: nowrap; 
+                overflow-x: hidden; 
+                width: 100%; /* Ensure full width */
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .logo h1 { display: none; } 
+            .user-info .user-details-text { display: none; } 
+            .logout-btn span { display: none; }
+            .logout-btn { padding: 8px; margin-left: auto; } 
+            .main-content { padding: 15px; }
+            .auth-card { padding: 20px; }
+            .modal-content { padding: 20px; }
+            
+            .content-header { 
+                margin-bottom: 20px; 
+                flex-direction: column; 
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .content-header h2 {
+                font-size: 1.3rem; 
+            }
+            .content-header button {
+                width: 100%; 
+            }
+
+            .stats-container { 
+                grid-template-columns: repeat(2, 1fr); /* MODIFIED: Two per row on small mobile */
+                gap: 15px; 
+            } 
+            
+            /* Text Visibility */
+            .desktop-text { display: none; }
+            .mobile-text { display: inline; }
+
+            /* CARD VIEW FOR TABLES ON MOBILE */
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                background: white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                padding: 5px;
+            }
+            
+            /* NEW: Empty state row on mobile */
+            tr.empty-state-row {
+                border: 1px dashed #ddd;
+                box-shadow: none;
+                background: #f9f9f9;
+            }
+            tr.empty-state-row td {
+                justify-content: center;
+                text-align: center;
+                border: none;
+                padding: 30px 15px !important;
+            }
+            tr.empty-state-row td:before {
+                display: none;
+            }
+
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding: 10px 15px !important;
+                text-align: right;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.9rem;
+            }
+            
+            td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: left;
+                color: var(--dark);
+                margin-right: 15px;
+            }
+
+            /* Specific Styling for Last Row (Actions) on Mobile */
+            tr td:last-child {
+                border-bottom: none;
+                /* MODIFIED: Align label to left, button to right */
+                justify-content: space-between; 
+                padding-left: 15px !important;
+                padding-right: 15px !important; 
+            }
+            
+            /* MODIFIED: Show 'Action' label */
+            tr td:last-child:before {
+                display: inline-block !important;
+                white-space: nowrap; /* ADDED: Keep "Actions" on one line */
+            }
+            
+            /* Mobile styles for action wrapper are now default */
+            
+            tr td:first-child, tr th:first-child { padding-left: 15px; }
+            
+            .add-question-form { padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .exam-controls { flex-direction: column; gap: 10px; }
+            .exam-controls .btn-sm { width: 100%; }
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Authentication Screen -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            
+            <!-- NEW: Auth Header -->
+            <div class="auth-header">
+                <div class="awa-logo-auth">AWA</div> 
+                <h1 class="auth-header-title">WELCOME!</h1>
+                <div class="logo-icon-wrapper"><i class="fas fa-graduation-cap"></i></div>
+            </div>
+            
+            <div class="logo">
+                <div class="logo-icon-wrapper"><i class="fas fa-graduation-cap"></i></div>
+                <h1>AWA</h1>
+            </div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="register">Register</div>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" value="admin@examsystem.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" value="admin123" required>
+                </div>
+                <button type="submit" class="btn" id="loginButton">
+                    <span class="btn-text">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+            <form id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label for="registerName">Full Name</label>
+                    <input type="text" id="registerName" class="form-control" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerRole">Role</label>
+                    <select id="registerRole" class="form-control" required>
+                        <option value="">Select Role</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn" id="registerButton">
+                    <span class="btn-text">
+                        <i class="fas fa-user-plus"></i> Register
+                    </span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="appScreen" class="hidden">
+        <div class="container">
+            <header>
+                <div class="header-left">
+                    <button class="btn-icon mobile-nav-toggle" id="mobileNavToggle"><i class="fas fa-bars"></i></button>
+                    <div class="awa-logo-header">AWA</div>
+                    <div class="logo">
+                        <div class="logo-icon-wrapper"><i class="fas fa-graduation-cap"></i></div>
+                        <h1>AWA</h1>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">AD</div>
+                    <div class="user-details-text"> 
+                        <div class="user-name" id="userName">Admin User</div>
+                        <div class="user-email" id="userEmail">admin@examsystem.com</div>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard">
+                <div class="sidebar" id="sidebar">
+                    <button class="btn-icon sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+                    <div class="user-role">
+                        <div class="role-badge role-admin" id="userRoleBadge">Admin</div>
+                    </div>
+                    <ul class="nav-menu">
+                        <li class="nav-item"><a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" data-page="users"><i class="fas fa-users"></i> User Management</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" data-page="exams"><i class="fas fa-file-alt"></i> Exam Management</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" data-page="results"><i class="fas fa-chart-bar"></i> Results & Analytics</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" data-page="takeExam"><i class="fas fa-pencil-alt"></i> Take Exam</a></li>
+                    </ul>
+                </div>
+
+                <div class="main-content">
+                    <!-- Dashboard Page -->
+                    <div id="dashboardPage" class="page-content">
+                        <div class="content-header">
+                            <h2>Dashboard Overview</h2>
+                            <!-- <button class="btn btn-sm admin-only" id="addExamBtn"><i class="fas fa-plus"></i> Add New Exam</button> -->
+                        </div>
+
+                        <div class="stats-container" id="statsContainer">
+                            <div class="stat-card clickable" data-page="users" data-filter="all">
+                                <div class="stat-value" id="totalUsers">0</div>
+                                <div class="stat-label">Total Users</div>
+                            </div>
+                            <div class="stat-card teacher clickable" data-page="users" data-filter="teacher">
+                                <div class="stat-value" id="totalTeachers">0</div>
+                                <div class="stat-label">Teachers</div>
+                            </div>
+                            <div class="stat-card student clickable" data-page="users" data-filter="student">
+                                <div class="stat-value" id="totalStudents">0</div>
+                                <div class="stat-label">Students</div>
+                            </div>
+                            <div class="stat-card clickable" data-page="exams">
+                                <div class="stat-value" id="totalExams">0</div>
+                                <div class="stat-label">Exams Created</div>
+                            </div>
+                            <div class="stat-card clickable" data-page="results">
+                                <div class="stat-value" id="completedExams">0</div>
+                                <div class="stat-label">Exams Completed</div>
+                            </div>
+                        </div>
+
+                        <div class="tabs">
+                            <div class="tab active" data-tab="pending">Pending Approval</div>
+                            <div class="tab" data-tab="recent">Recent Exams</div>
+                            <div class="tab" data-tab="users">User Activity</div>
+                        </div>
+
+                        <div class="tab-content active" id="pending-tab">
+                            <div class="table-container">
+                                <table id="pendingExamsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Exam Title</th>
+                                            <th>Teacher</th>
+                                            <th>Questions</th>
+                                            <th>Status</th>
+                                            <th class="admin-action-header">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="recent-tab">
+                            <div class="table-container">
+                                <table id="recentExamsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Exam Title</th>
+                                            <th>Subject</th>
+                                            <th>Questions</th>
+                                            <th>Participants</th>
+                                            <th class="admin-action-header">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="users-tab">
+                            <!-- MODIFIED: Added scrollable-list class -->
+                            <div class="table-container scrollable-list" id="dashboardUserListContainer">
+                                <table id="usersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Role</th>
+                                            <th>Joined</th>
+                                            <th>Status</th>
+                                            <!-- <th class="admin-action-header">Actions</th> -->
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <!-- NEW: Show all button -->
+                            <button class="btn btn-sm" id="showAllUsersBtn" style="width: auto; margin-top: 10px; display: none;">
+                                <i class="fas fa-chevron-down"></i> Show all...
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Take Exam Page -->
+                    <div id="takeExamPage" class="page-content hidden">
+                        <div class="exam-container">
+                            <div class="exam-header">
+                                <button class="btn-icon" id="backToDashboardBtn" style="float: left;" title="Back to Dashboard"><i class="fas fa-arrow-left"></i></button>
+                                <h2 id="examTitle">Mathematics Final Exam</h2>
+                                <p>Duration: <span id="examDuration">60</span> minutes</p>
+                            </div>
+                            <div class="exam-info">
+                                <div>Time Remaining: <span id="timeRemaining">60:00</span></div>
+                                <div>Question: <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span></div>
+                            </div>
+                            <div class="question-card" id="questionContainer">
+                                <div class="question-text" id="questionText">Question Text</div>
+                                <div class="options" id="examOptionsContainer"></div>
+                            </div>
+                            <div id="resultDisplay" class="result-card hidden">
+                                <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 20px;"></i>
+                                <h3>Exam Submitted!</h3>
+                                <p style="font-size: 1.5rem; margin: 20px 0;">Your Score: <span id="finalScoreDisplay" style="font-weight: bold;"></span></p>
+                                <button class="btn" id="examDoneBtn" style="width: auto; margin: 0 auto;">Back to Dashboard</button>
+                            </div>
+                            
+                            <div class="exam-controls" id="activeExamControls">
+                                <button class="btn btn-sm" id="prevQuestion"><i class="fas fa-arrow-left"></i> Previous</button>
+                                <button class="btn btn-sm" id="nextQuestion">Next <i class="fas fa-arrow-right"></i></button>
+                                <button class="btn btn-sm hidden" id="submitExam" style="background: var(--secondary);">Submit Exam</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exam Editor Page -->
+                    <div id="examEditorPage" class="page-content hidden">
+                        <div class="content-header">
+                            <h2 id="examEditorTitle">Edit Exam</h2>
+                            <button class="btn btn-sm" id="editorBackToDashboardBtn"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                        </div>
+                        
+                        <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                            <h3>Exam Details</h3>
+                            <form id="editExamDetailsForm" style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <div class="form-group">
+                                    <label>Title</label>
+                                    <input type="text" id="editExamTitleInput" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Subject</label>
+                                    <select id="editExamSubjectInput" class="form-control">
+                                         <option value="math">Mathematics</option>
+                                         <option value="physics">Physics</option>
+                                         <option value="chemistry">Chemistry</option>
+                                         <option value="biology">Biology</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Duration (mins) <small>(0 = Untimed)</small></label>
+                                    <input type="number" id="editExamDurationInput" class="form-control">
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: flex-end;">
+                                    <button type="submit" class="btn btn-sm">Update Details</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="question-editor-container">
+                            <div class="add-question-form">
+                                <h3>Add New Question</h3>
+                                <form id="addQuestionForm">
+                                    <div class="form-group">
+                                        <label for="questionTextInput">Question Text</label>
+                                        <textarea id="questionTextInput" class="form-control" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Options (select the correct answer)</label>
+                                        <div class="option-input-group">
+                                            <input type="radio" name="correctAnswer" value="0" required>
+                                            <input type="text" id="option1Input" class="form-control" placeholder="Option 1" required>
+                                        </div>
+                                        <div class="option-input-group">
+                                            <input type="radio" name="correctAnswer" value="1">
+                                            <input type="text" id="option2Input" class="form-control" placeholder="Option 2" required>
+                                        </div>
+                                        <div class="option-input-group">
+                                            <input type="radio" name="correctAnswer" value="2">
+                                            <input type="text" id="option3Input" class="form-control" placeholder="Option 3" required>
+                                        </div>
+                                        <div class="option-input-group">
+                                            <input type="radio" name="correctAnswer" value="3">
+                                            <input type="text" id="option4Input" class="form-control" placeholder="Option 4" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm" style="width: auto;">Add Question</button>
+                                </form>
+                            </div>
+                            <div>
+                                <h3>Existing Questions (<span id="questionCount">0</span>)</h3>
+                                <ul id="questionList" class="question-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                      <!-- User Management Page -->
+                      <div id="usersPage" class="page-content hidden">
+                         <div class="content-header">
+                             <h2 id="usersPageTitle">User Management</h2>
+                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                         </div>
+                         <!-- MODIFIED: Added scrollable-list class -->
+                         <div class="table-container scrollable-list" id="manageUserListContainer">
+                             <table id="manageUsersTable">
+                                 <thead>
+                                     <tr>
+                                         <th>Name</th>
+                                         <th>Email</th>
+                                         <th>Role</th>
+                                         <th>Status</th>
+                                         <th class="admin-action-header">Actions</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody></tbody>
+                             </table>
+                         </div>
+                         <!-- NEW: Show all button -->
+                         <button class="btn btn-sm" id="showAllManageUsersBtn" style="width: auto; margin-top: 10px; display: none;">
+                            <i class="fas fa-chevron-down"></i> Show all users...
+                         </button>
+                     </div>
+
+                      <!-- Exam Management Page -->
+                      <div id="examsPage" class="page-content hidden">
+                         <div class="content-header">
+                             <h2>Exam Management</h2>
+                             <div style="display: flex; gap: 10px;">
+                                 <!-- <button class="btn btn-sm btn-success" id="downloadExamsBtn" title="Download All Exams"><i class="fas fa-download"></i> Export JSON</button> -->
+                                 <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             </div>
+                         </div>
+                         
+                         <!-- MODIFIED: Centered, stacked, and equal-width buttons -->
+                         <div style="margin-bottom: 20px; margin-top: -10px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 220px; margin-left: auto; margin-right: auto;">
+                            <button class="btn btn-sm btn-success admin-only" id="downloadExamsBtn" title="Download All Exams" style="width: 100%;"><i class="fas fa-download"></i> Export JSON</button>
+                            <!-- MODIFIED: This button will now trigger the file input -->
+                            <button class="btn btn-sm btn-warning admin-only" id="bulkUploadBtn" title="Upload Exam JSON" style="width: 100%;"><i class="fas fa-upload"></i> Bulk Upload JSON</button>
+                            <input type="file" id="bulkJsonInput" accept=".json" style="display: none;">
+                            <button class="btn btn-sm admin-only" id="addExamBtn" style="width: 100%;"><i class="fas fa-plus"></i> Add New Exam</button>
+                         </div>
+
+                         <!-- MODIFIED: Removed the large dropzone area -->
+
+                         <div class="table-container">
+                             <table id="manageExamsTable">
+                                 <thead>
+                                     <tr>
+                                         <th>Exam Title</th>
+                                         <th>Exam ID</th> <!-- ADDED: Header for ID -->
+                                         <th>Subject</th>
+                                         <th>Duration</th>
+                                         <th class="resources-cell">Resources</th>
+                                         <th class="admin-action-header">Actions</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody></tbody>
+                             </table>
+                         </div>
+                     </div>
+
+                      <div id="resultsPage" class="page-content hidden">
+                         <div class="content-header">
+                             <h2>Results & Analytics</h2>
+                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                         </div>
+                         <div class="table-container">
+                             <table id="resultsTable">
+                                 <thead>
+                                     <tr>
+                                         <th>Student</th>
+                                         <th>Exam</th>
+                                         <th>Score</th>
+                                         <th>Date</th>
+                                         <th class="admin-action-header">Actions</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody></tbody>
+                             </table>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Toast Notification Container -->
+        <div id="toastContainer"></div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="addExamModal" data-close="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Exam</h3>
+                <button class="close-modal" data-close="true">&times;</button>
+            </div>
+            <form id="examForm">
+                <div class="form-group">
+                    <label for="examTitleInput">Exam Title</label>
+                    <input type="text" id="examTitleInput" class="form-control" placeholder="Enter exam title" required>
+                </div>
+                <div class="form-group">
+                    <label for="examSubject">Subject</label>
+                    <select id="examSubject" class="form-control" required>
+                        <option value="">Select Subject</option>
+                        <option value="math">Mathematics</option>
+                        <option value="physics">Physics</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="biology">Biology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="examDate">Exam Date</label>
+                    <input type="date" id="examDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="examDurationInput">Duration (minutes) <small>(0 for untimed)</small></label>
+                    <input type="number" id="examDurationInput" class="form-control" placeholder="60" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn" style="width: 100%;">Create & Add Questions</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="editQuestionModal" data-close="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Question</h3>
+                <button class="close-modal" data-close="true">&times;</button>
+            </div>
+            <form id="editQuestionForm">
+                <div class="form-group">
+                    <label for="editQuestionTextInput">Question Text</label>
+                    <textarea id="editQuestionTextInput" class="form-control" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Options (select the correct answer)</label>
+                    <div class="option-input-group">
+                        <input type="radio" name="editCorrectAnswer" value="0" required>
+                        <input type="text" id="editOption1Input" class="form-control" placeholder="Option 1" required>
+                    </div>
+                    <div class="option-input-group">
+                        <input type="radio" name="editCorrectAnswer" value="1">
+                        <input type="text" id="editOption2Input" class="form-control" placeholder="Option 2" required>
+                    </div>
+                    <div class="option-input-group">
+                        <input type="radio" name="editCorrectAnswer" value="2">
+                        <input type="text" id="editOption3Input" class="form-control" placeholder="Option 3" required>
+                    </div>
+                    <div class="option-input-group">
+                        <input type="radio" name="editCorrectAnswer" value="3">
+                        <input type="text" id="editOption4Input" class="form-control" placeholder="Option 4" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Edit User Modal -->
+    <div class="modal" id="editUserModal" data-close="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="close-modal" data-close="true">&times;</button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label for="editUserNameInput">Full Name</label>
+                    <input type="text" id="editUserNameInput" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editUserRoleInput">Role</label>
+                    <select id="editUserRoleInput" class="form-control" required>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="pdfPreviewModal" data-close="true">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Resource Preview</h3>
+                <button class="close-modal" data-close="true">&times;</button>
+            </div>
+            <div id="pdfContainer">
+                <!-- Iframe will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addResourceModal" data-close="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Attach Resource</h3>
+                <button class="close-modal" data-close="true">&times;</button>
+            </div>
+            <form id="resourceForm">
+                <input type="hidden" id="resourceExamId">
+                <div class="form-group">
+                    <label>Resource Type</label>
+                    <select id="resourceType" class="form-control">
+                        <option value="link">External Link (Reference)</option>
+                        <option value="pdf">PDF File</option>
+                    </select>
+                </div>
+                
+                <div id="linkInputGroup" class="form-group">
+                    <label for="resourceLink">URL</label>
+                    <input type="url" id="resourceLink" class="form-control" placeholder="https://example.com">
+                </div>
+
+                <div id="pdfInputGroup" class="form-group hidden">
+                    <label for="resourcePdf">Upload PDF</label>
+                    <input type="file" id="resourcePdf" class="form-control" accept="application/pdf">
+                    <p style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">Note: For simulation, PDF is viewable only during this session.</p>
+                </div>
+
+                <button type="submit" class="btn">Attach Resource</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="securityModal" data-close="true"> <!-- MODIFIED: Added data-close -->
+        <div class="modal-content mini">
+            <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;"></i>
+            <h3 style="margin-bottom: 10px;">Admin Access Required</h3>
+            <p style="margin-bottom: 20px;">Please enter the admin security code.</p>
+            <input type="password" id="securityCodeInput" class="form-control" placeholder="Enter Code" style="text-align: center; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-danger" id="cancelSecurityBtn" data-close="true">Cancel</button> <!-- MODIFIED: Added data-close -->
+                <button class="btn" id="confirmSecurityBtn">Verify</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NEW: Join Exam Modal -->
+    <div class="modal" id="joinExamModal" data-close="true">
+        <div class="modal-content mini">
+            <div class="modal-header" style="justify-content: center;">
+                <h3>Join Exam</h3>
+            </div>
+             <form id="joinExamForm">
+                 <div class="form-group">
+                     <label for="joinExamCodeInput" style="text-align: left;">Exam ID</label>
+                     <!-- MODIFIED: Updated placeholder and maxlength to match generated code format -->
+                     <input type="text" id="joinExamCodeInput" class="form-control" placeholder="Enter Exam ID (e.g., EX-XXXX)" required maxlength="7" style="text-align: center; text-transform: uppercase;">
+                 </div>
+                 <button type="submit" class="btn" id="joinExamButton">
+                     <span class="btn-text">
+                         <i class="fas fa-pencil-alt"></i> Start Exam
+                     </span>
+                     <div class="spinner"></div>
+                 </button>
+             </form>
+        </div>
+    </div>
+    
+    <!-- NEW: Confirmation Modal -->
+    <div class="modal" id="confirmationModal" data-close="true"> <!-- MODIFIED: Added data-close -->
+        <div class="modal-content mini">
+            <div id="confirmIcon" class="modal-icon danger"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3 id="confirmTitle">Are you sure?</h3>
+            <p id="confirmText">This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-warning" id="confirmCancelBtn" data-close="true">Cancel</button> <!-- MODIFIED: Added data-close -->
+                <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Database
+        class MockDatabase {
+            constructor() {
+                this.users = JSON.parse(localStorage.getItem('examUsers')) || [];
+                this.exams = JSON.parse(localStorage.getItem('examExams')) || [];
+                this.results = JSON.parse(localStorage.getItem('examResults')) || [];
+                
+                if (this.users.length === 0) {
+                    this.initializeDemoData();
+                }
+                
+                // Run retention policy check
+                this.applyRetentionPolicy();
+            }
+            
+            // NEW: Get date from 2 years ago
+            getRetentionCutoff() {
+                const cutoff = new Date();
+                cutoff.setFullYear(cutoff.getFullYear() - 2);
+                return cutoff;
+            }
+
+            // NEW: Apply retention policy
+            applyRetentionPolicy() {
+                const cutoffDate = this.getRetentionCutoff();
+                const deletedUserIds = [];
+                
+                // Filter users
+                const originalUserCount = this.users.length;
+                this.users = this.users.filter(user => {
+                    // Always keep admin
+                    if (user.role === 'admin') return true;
+                    
+                    const joinedDate = new Date(user.joinedDate);
+                    if (joinedDate < cutoffDate) {
+                        deletedUserIds.push(user.id);
+                        return false; // Remove user
+                    }
+                    return true; // Keep user
+                });
+                
+                if (deletedUserIds.length > 0) {
+                     console.log(`RETENTION POLICY: Removed ${deletedUserIds.length} users.`);
+                    
+                    // Filter results
+                    this.results = this.results.filter(result => !deletedUserIds.includes(result.studentId));
+                    
+                    // Anonymize exams from deleted teachers
+                    this.exams.forEach(exam => {
+                        if (deletedUserIds.includes(exam.teacherId)) {
+                            exam.teacher = "Archived User";
+                            exam.teacherId = null;
+                        }
+                    });
+                }
+                
+                // Save changes if any users were deleted
+                if (this.users.length !== originalUserCount) {
+                    this.saveToStorage();
+                }
+            }
+            
+            initializeDemoData() {
+                const twoYearsAgo = new Date();
+                twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+                
+                const oneYearAgo = new Date();
+                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                
+                this.users = [
+                    { id: 1, name: 'Admin User', email: 'admin@examsystem.com', password: 'admin123', role: 'admin', status: 'active', joinedDate: new Date() },
+                    // This teacher is OLD and will be deleted
+                    { id: 2, name: 'Teacher One (Old)', email: 'teacher@examsystem.com', password: 'teacher123', role: 'teacher', status: 'active', joinedDate: twoYearsAgo },
+                    { id: 3, name: 'Student One', email: 'student@examsystem.com', password: 'student123', role: 'student', status: 'active', joinedDate: oneYearAgo },
+                    { id: 4, name: 'Teacher Two (New)', email: 'teacher2@examsystem.com', password: 'teacher123', role: 'teacher', status: 'active', joinedDate: new Date() },
+                    { id: 5, name: 'Student Two', email: 'student2@examsystem.com', password: 'student123', role: 'student', status: 'active', joinedDate: new Date() }
+                ];
+                
+                this.exams = [
+                    { 
+                        id: 1, 
+                        examCode: 'EX-A1B2',
+                        title: 'Mathematics Midterm', 
+                        subject: 'math', 
+                        teacher: 'Teacher One (Old)', // This name will be anonymized
+                        teacherId: 2, // ID of the old teacher
+                        duration: 60, 
+                        scheduledDate: '2023-11-15', 
+                        status: 'pending', 
+                        questions: [{question: 'What is 2+2?', options:['3','4','5','6'], correctAnswer: 1}],
+                        resources: [] 
+                    },
+                    { 
+                        id: 2, 
+                        examCode: 'EX-C3D4',
+                        title: 'Physics Final (Grade 8)', 
+                        subject: 'physics', 
+                        teacher: 'Teacher Two (New)',
+                        teacherId: 4, // ID of the new teacher
+                        duration: 45, 
+                        scheduledDate: '2023-12-20', 
+                        status: 'approved', 
+                        questions: [
+                            { question: "What is the unit of force?", options: ["Newton", "Joule", "Watt", "Pascal"], correctAnswer: 0 },
+                            { question: "Which law states F=ma?", options: ["Newton's 1st Law", "Newton's 2nd Law", "Newton's 3rd Law", "Law of Gravity"], correctAnswer: 1 },
+                            { question: "What is the speed of light?", options: ["3x10^8 m/s", "300 m/s", "100 km/h", "Sound speed"], correctAnswer: 0 },
+                            { question: "Kinetic Energy depends on?", options: ["Height", "Velocity", "Time", "Volume"], correctAnswer: 1 },
+                            { question: "Gravity on Earth is approx?", options: ["9.8 m/s^2", "10.5 m/s^2", "5 m/s^2", "15 m/s^2"], correctAnswer: 0 }
+                        ],
+                        resources: []
+                    }
+                ];
+
+                this.results = [
+                    { id: 101, studentId: 3, studentName: "Student One", examId: 2, examTitle: "Physics Final (Grade 8)", score: 4, total: 5, date: new Date().toLocaleString() }
+                ];
+                
+                this.saveToStorage();
+            }
+            
+            saveToStorage() {
+                localStorage.setItem('examUsers', JSON.stringify(this.users));
+                localStorage.setItem('examExams', JSON.stringify(this.exams));
+                localStorage.setItem('examResults', JSON.stringify(this.results));
+            }
+            
+            findUserByEmail(email) { return this.users.find(user => user.email === email); }
+            findUserById(id) { return this.users.find(user => user.id === id); } // NEW
+            
+            createUser(userData) {
+                const newUser = { 
+                    id: Date.now(), 
+                    ...userData, 
+                    status: 'active',
+                    joinedDate: new Date() // NEW: Add joinedDate
+                };
+                this.users.push(newUser);
+                this.saveToStorage();
+                return newUser;
+            }
+            
+            // NEW: Update User Method
+            updateUser(userId, updates) {
+                const user = this.findUserById(userId);
+                if (user) {
+                    Object.assign(user, updates);
+                    this.saveToStorage();
+                    return user;
+                }
+                return null;
+            }
+            
+            getExams() { return this.exams; }
+            findExamById(id) { return this.exams.find(e => e.id === id); }
+            findExamByCode(code) { return this.exams.find(e => e.examCode && e.examCode.toUpperCase() === code.toUpperCase()); } // NEW
+            
+            // NEW: Generate 6-char Exam ID
+            generateExamCode() {
+                let code;
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+                do {
+                    code = 'EX-';
+                    for(let i=0; i<4; i++) {
+                        code += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                } while (this.findExamByCode(code));
+                return code;
+            }
+            
+            createExam(examData) {
+                const newExam = { 
+                    id: Date.now(), 
+                    examCode: this.generateExamCode(),
+                    resources: [], 
+                    ...examData, 
+                    questions: examData.questions || [] 
+                };
+                this.exams.push(newExam);
+                this.saveToStorage();
+                return newExam;
+            }
+            updateExam(examId, updates) {
+                 const exam = this.findExamById(examId);
+                 if (exam) {
+                     Object.assign(exam, updates);
+                     this.saveToStorage();
+                     return exam;
+                 }
+                 return null;
+            }
+            deleteExam(examId) { // NEW
+                this.exams = this.exams.filter(e => e.id !== examId);
+                // Also delete associated results
+                this.results = this.results.filter(r => r.examId !== examId);
+                this.saveToStorage();
+            }
+            updateExamStatus(examId, status) {
+                const exam = this.findExamById(examId);
+                if (exam) { exam.status = status; this.saveToStorage(); return exam; }
+                return null;
+            }
+            addQuestionToExam(examId, questionData) {
+                const exam = this.findExamById(examId);
+                if (exam) { exam.questions.push(questionData); this.saveToStorage(); }
+            }
+            deleteQuestionFromExam(examId, questionIndex) {
+                const exam = this.findExamById(examId);
+                if (exam && exam.questions[questionIndex]) { exam.questions.splice(questionIndex, 1); this.saveToStorage(); }
+            }
+            updateQuestionInExam(examId, questionIndex, questionData) {
+                const exam = this.findExamById(examId);
+                if (exam && exam.questions[questionIndex]) { exam.questions[questionIndex] = questionData; this.saveToStorage(); }
+            }
+            addResourceToExam(examId, resource) {
+                const exam = this.findExamById(examId);
+                if(exam) {
+                    if(!exam.resources) exam.resources = [];
+                    exam.resources.push(resource);
+                    this.saveToStorage();
+                }
+            }
+            
+            // MODIFIED: Accept importingUser
+            bulkImportExams(examsArray, importingUser) {
+                examsArray.forEach(ex => {
+                    const newExam = { 
+                        ...ex, 
+                        id: Date.now() + Math.floor(Math.random() * 1000), 
+                        examCode: this.generateExamCode(), // Assign unique code
+                        status: 'approved',
+                        teacher: importingUser.name, // NEW: Assign current user
+                        teacherId: importingUser.id  // NEW: Assign current user ID
+                    };
+                    this.exams.push(newExam);
+                });
+                this.saveToStorage();
+            }
+            
+            saveResult(resultData) {
+                const newResult = { id: Date.now(), ...resultData, date: new Date().toLocaleString() };
+                this.results.push(newResult);
+                this.saveToStorage();
+            }
+            deleteResult(resultId) {
+                this.results = this.results.filter(r => r.id !== resultId);
+                this.saveToStorage();
+            }
+            hasStudentTakenExam(studentId, examId) {
+                return this.results.some(r => r.studentId === studentId && r.examId === examId);
+            }
+        }
+
+        // --- Application State ---
+        const state = {
+            currentUser: null,
+            currentPage: 'dashboard',
+            db: new MockDatabase(),
+            currentExam: null,
+            currentQuestionIndex: 0,
+            userAnswers: [],
+            examTimer: null,
+            timeRemaining: 0,
+            editingExamId: null,
+            editingQuestionIndex: null,
+            editingUserId: null, // NEW
+            userFilter: 'all',
+            isPreviewMode: false,
+            pendingAction: null,
+            pendingConfirmation: null, // NEW: For confirmation modal
+        };
+
+        // --- DOM Elements ---
+        const authScreen = document.getElementById('authScreen');
+        const appScreen = document.getElementById('appScreen');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page-content');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const addExamBtn = document.getElementById('addExamBtn');
+        const addExamModal = document.getElementById('addExamModal');
+        const examForm = document.getElementById('examForm');
+        
+        const pendingExamsTableBody = document.getElementById('pendingExamsTable').querySelector('tbody');
+        const recentExamsTableBody = document.getElementById('recentExamsTable').querySelector('tbody');
+        const usersTableBody = document.getElementById('usersTable').querySelector('tbody');
+        const manageUsersTableBody = document.getElementById('manageUsersTable').querySelector('tbody');
+        const resultsTableBody = document.getElementById('resultsTable').querySelector('tbody');
+        const manageExamsTableBody = document.getElementById('manageExamsTable').querySelector('tbody');
+
+        const examOptionsContainer = document.getElementById('examOptionsContainer');
+        const prevQuestionBtn = document.getElementById('prevQuestion');
+        const nextQuestionBtn = document.getElementById('nextQuestion');
+        const submitExamBtn = document.getElementById('submitExam');
+        const backToDashboardBtn = document.getElementById('backToDashboardBtn');
+        const examDoneBtn = document.getElementById('examDoneBtn'); // NEW
+
+        const examEditorPage = document.getElementById('examEditorPage');
+        const examEditorTitle = document.getElementById('examEditorTitle');
+        const addQuestionForm = document.getElementById('addQuestionForm');
+        const questionList = document.getElementById('questionList');
+        const questionCount = document.getElementById('questionCount');
+        const editorBackToDashboardBtn = document.getElementById('editorBackToDashboardBtn');
+        const editExamDetailsForm = document.getElementById('editExamDetailsForm');
+        
+        const editQuestionModal = document.getElementById('editQuestionModal');
+        const editQuestionForm = document.getElementById('editQuestionForm');
+        const editUserModal = document.getElementById('editUserModal'); // NEW
+        const editUserForm = document.getElementById('editUserForm'); // NEW
+        const pdfPreviewModal = document.getElementById('pdfPreviewModal');
+        const addResourceModal = document.getElementById('addResourceModal');
+        const securityModal = document.getElementById('securityModal');
+        
+        // NEW: Exam ID Modal
+        const joinExamModal = document.getElementById('joinExamModal');
+        const joinExamForm = document.getElementById('joinExamForm');
+        const joinExamCodeInput = document.getElementById('joinExamCodeInput');
+        
+        // NEW: Confirmation Modal
+        const confirmationModal = document.getElementById('confirmationModal');
+
+        // MODIFIED: Get stats container
+        const statsContainer = document.getElementById('statsContainer');
+        
+        // MODIFIED: Get bulk upload button
+        const bulkUploadBtn = document.getElementById('bulkUploadBtn');
+        const bulkJsonInput = document.getElementById('bulkJsonInput');
+        const downloadExamsBtn = document.getElementById('downloadExamsBtn');
+
+        const mobileNavToggle = document.getElementById('mobileNavToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarClose = document.getElementById('sidebarClose');
+        const overlay = document.getElementById('overlay');
+        const usersPageTitle = document.getElementById('usersPageTitle');
+        
+        // NEW: User list "Show All" buttons
+        const showAllUsersBtn = document.getElementById('showAllUsersBtn');
+        const showAllManageUsersBtn = document.getElementById('showAllManageUsersBtn');
+
+
+        function init() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                state.currentUser = JSON.parse(savedUser);
+                // Re-verify user, in case they were deleted by retention policy
+                if (!state.db.findUserById(state.currentUser.id)) {
+                    handleLogout(); // Force logout if user no longer exists
+                    return;
+                }
+                showApp();
+            } else {
+                showAuth();
+            }
+            setupEventListeners();
+            updateUI();
+        }
+
+        function setupEventListeners() {
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchAuthTab(tab.getAttribute('data-tab'));
+                });
+            });
+            
+            loginForm.addEventListener('submit', handleLogin);
+            registerForm.addEventListener('submit', handleRegister);
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            // NEW: Join Exam Form
+            joinExamForm.addEventListener('submit', handleJoinExam);
+
+            // NEW: Confirmation Modal Buttons
+            document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+                confirmationModal.style.display = 'none';
+                state.pendingConfirmation = null;
+            });
+            document.getElementById('confirmActionBtn').addEventListener('click', () => {
+                if (state.pendingConfirmation) {
+                    state.pendingConfirmation();
+                }
+                confirmationModal.style.display = 'none';
+                state.pendingConfirmation = null;
+            });
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (link.dataset.page === 'users') {
+                        state.userFilter = 'all';
+                        updateTables();
+                    }
+                    handleNavClick(link.dataset.page);
+                    if (window.innerWidth <= 900) closeSidebar();
+                });
+            });
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchTab(tab.getAttribute('data-tab'));
+                });
+            });
+            
+            addExamBtn.addEventListener('click', () => {
+                performAdminAction(() => {
+                    addExamModal.style.display = 'flex';
+                });
+            });
+            
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target.dataset.close === 'true') {
+                        modal.style.display = 'none';
+                        if(modal.id === 'securityModal') state.pendingAction = null;
+                        if(modal.id === 'confirmationModal') state.pendingConfirmation = null;
+                    }
+                });
+            });
+
+            examForm.addEventListener('submit', handleCreateExam);
+            
+            pendingExamsTableBody.addEventListener('click', handleDashboardTableClick);
+            recentExamsTableBody.addEventListener('click', handleDashboardTableClick);
+            manageExamsTableBody.addEventListener('click', handleExamManagementClick);
+            manageUsersTableBody.addEventListener('click', handleUserManagementClick); // NEW
+            resultsTableBody.addEventListener('click', handleResultsTableClick);
+            
+            submitExamBtn.addEventListener('click', handleSubmitExam);
+            nextQuestionBtn.addEventListener('click', handleNextQuestion);
+            prevQuestionBtn.addEventListener('click', handlePrevQuestion);
+            
+            backToDashboardBtn.addEventListener('click', handleBackToDashboard); // For exam page
+            examDoneBtn.addEventListener('click', handleBackToDashboard); // For result page
+            
+            document.querySelectorAll('.back-to-dashboard-btn').forEach(btn => {
+                btn.addEventListener('click', handleBackToDashboard); // For management pages
+            });
+            editorBackToDashboardBtn.addEventListener('click', handleBackToDashboard);
+
+            examOptionsContainer.addEventListener('click', (e) => {
+                const clickedOption = e.target.closest('.option');
+                if (!clickedOption) return;
+                if (state.isPreviewMode) return;
+
+                examOptionsContainer.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                clickedOption.classList.add('selected');
+                clickedOption.querySelector('input[type="radio"]').checked = true;
+                saveAnswer();
+            });
+            
+            addQuestionForm.addEventListener('submit', handleAddQuestion);
+            
+            questionList.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-question');
+                const deleteBtn = e.target.closest('.delete-question');
+                if (editBtn) { openEditQuestionModal(state.editingExamId, parseInt(editBtn.dataset.index)); }
+                if (deleteBtn) { handleDeleteQuestion(state.editingExamId, parseInt(deleteBtn.dataset.index)); }
+            });
+            
+            editQuestionForm.addEventListener('submit', handleUpdateQuestion);
+            editUserForm.addEventListener('submit', handleUpdateUser); // NEW
+            editExamDetailsForm.addEventListener('submit', handleUpdateExamDetails);
+
+            mobileNavToggle.addEventListener('click', openSidebar);
+            sidebarClose.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+            
+            // MODIFIED: Using event delegation on the container
+            statsContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.stat-card.clickable');
+                if (!card) return; // Click wasn't on a card
+                if (!state.currentUser) return; // Safety check
+
+                const page = card.dataset.page;
+                const filter = card.dataset.filter;
+
+                if (state.currentUser.role === 'student' && (page === 'users' || page === 'exams')) return; 
+                if (page === 'users') {
+                    state.userFilter = filter || 'all';
+                    updateTables(); 
+                }
+                handleNavClick(page);
+            });
+
+            // MODIFIED: Event listener for new upload button
+            bulkUploadBtn.addEventListener('click', () => {
+                performAdminAction(() => {
+                    // This callback runs *after* admin code is verified
+                    bulkJsonInput.click();
+                });
+            });
+            bulkJsonInput.addEventListener('change', handleBulkUpload);
+            downloadExamsBtn.addEventListener('click', exportExams);
+
+            const resourceType = document.getElementById('resourceType');
+            resourceType.addEventListener('change', () => {
+                if(resourceType.value === 'pdf') {
+                    document.getElementById('pdfInputGroup').classList.remove('hidden');
+                    document.getElementById('linkInputGroup').classList.add('hidden');
+                } else {
+                    document.getElementById('pdfInputGroup').classList.add('hidden');
+                    document.getElementById('linkInputGroup').classList.remove('hidden');
+                }
+            });
+            document.getElementById('resourceForm').addEventListener('submit', handleAddResource);
+            
+            document.getElementById('confirmSecurityBtn').addEventListener('click', verifySecurityCode);
+            document.getElementById('cancelSecurityBtn').addEventListener('click', () => {
+                securityModal.style.display = 'none';
+                state.pendingAction = null;
+            });
+
+            // Mobile Action Menu Toggle Delegation
+            document.body.addEventListener('click', (e) => {
+                const trigger = e.target.closest('.mobile-menu-trigger');
+                
+                // Close all other dropdowns
+                document.querySelectorAll('.action-buttons.show').forEach(el => {
+                    if(!trigger || el !== trigger.closest('.action-wrapper').querySelector('.action-buttons')) {
+                        el.classList.remove('show');
+                        el.classList.remove('drop-up'); // NEW: Clean up drop-up class
+                    }
+                });
+
+                // Toggle the clicked one
+                if(trigger) {
+                    const container = trigger.closest('.action-wrapper').querySelector('.action-buttons');
+                    
+                    // NEW: Check if it should drop up
+                    const rect = trigger.getBoundingClientRect();
+                    // Check if menu bottom would be off-screen. (Approx 150px for menu height)
+                    const isNearBottom = (window.innerHeight - rect.bottom) < 160; 
+                    if (isNearBottom) {
+                        container.classList.add('drop-up');
+                    } else {
+                        container.classList.remove('drop-up');
+                    }
+                    
+                    container.classList.toggle('show');
+                }
+            });
+            
+            // NEW: User list "Show All" button events
+            showAllUsersBtn.addEventListener('click', () => {
+                document.getElementById('dashboardUserListContainer').classList.toggle('expanded');
+                showAllUsersBtn.classList.toggle('active');
+                if (showAllUsersBtn.classList.contains('active')) {
+                    showAllUsersBtn.innerHTML = `<i class="fas fa-chevron-up"></i> Show fewer`;
+                } else {
+                    showAllUsersBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all...`;
+                }
+                updateTables(true); // Force redraw
+            });
+            
+            showAllManageUsersBtn.addEventListener('click', () => {
+                document.getElementById('manageUserListContainer').classList.toggle('expanded');
+                showAllManageUsersBtn.classList.toggle('active');
+                if (showAllManageUsersBtn.classList.contains('active')) {
+                    showAllManageUsersBtn.innerHTML = `<i class="fas fa-chevron-up"></i> Show fewer`;
+                } else {
+                    showAllManageUsersBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all users...`;
+                }
+                updateTables(true); // Force redraw
+            });
+        }
+        
+        // --- NEW: Toast Notifier ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fas ${icon}" style="color: var(--${type === 'info' ? 'primary' : type});"></i> <span class="toast-message">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger the slide-in animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Automatically remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        container.removeChild(toast);
+                    }
+                }, 300); // Wait for slide-out animation
+            }, 3000);
+        }
+        
+        // --- NEW: Confirmation Modal ---
+        function showConfirmation(title, text, onConfirm, type = 'danger') {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmText').textContent = text;
+            
+            const iconDiv = document.getElementById('confirmIcon');
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            
+            iconDiv.className = `modal-icon ${type}`;
+            confirmBtn.className = `btn btn-${type}`;
+            
+            if(type === 'danger') {
+                iconDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i>`;
+            } else if (type === 'warning') {
+                iconDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i>`;
+            } else {
+                 iconDiv.innerHTML = `<i class="fas fa-question-circle"></i>`;
+            }
+            
+            state.pendingConfirmation = onConfirm;
+            confirmationModal.style.display = 'flex';
+        }
+        
+        // --- NEW: Loading Button State ---
+        function setButtonLoading(button, isLoading) {
+            button.disabled = isLoading;
+            button.classList.toggle('loading', isLoading);
+        }
+
+        function performAdminAction(callback) {
+            if(state.currentUser.role !== 'admin') {
+                showToast("This action requires admin privileges.", "error");
+                return;
+            }
+            state.pendingAction = callback;
+            document.getElementById('securityCodeInput').value = '';
+            securityModal.style.display = 'flex';
+        }
+
+        function verifySecurityCode() {
+            const code = document.getElementById('securityCodeInput').value;
+            if (code === "ADMIN123") {
+                securityModal.style.display = 'none';
+                if(state.pendingAction) state.pendingAction();
+                showToast("Admin action verified.", "success");
+            } else {
+                showToast("Access Denied: Invalid Code", "error");
+            }
+            state.pendingAction = null;
+        }
+
+        function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('open'); }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+        
+        function handleNavClick(page) {
+            if (page === 'takeExam') {
+                // NEW: Show modal instead of navigating
+                joinExamCodeInput.value = '';
+                joinExamModal.style.display = 'flex';
+            } else {
+                switchPage(page);
+                if(page === 'exams') renderExamManagementTable();
+                if(page === 'results') renderResultsTable();
+                if(page === 'users') updateTables(); // NEW: Refresh users table on nav
+            }
+            navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === page));
+        }
+        
+        function handleBackToDashboard() {
+            if (state.examTimer) clearInterval(state.examTimer);
+            state.currentExam = null;
+            state.editingExamId = null;
+            state.isPreviewMode = false;
+            // MODIFIED: Navigate to dashboard page correctly
+            switchPage('dashboard');
+            navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === 'dashboard'));
+            
+            // MODIFIED: Added check for currentUser
+            if (state.currentUser) {
+                updateTables(); // Refresh dashboard tables
+                updateStats(); // Refresh stats
+            }
+        }
+        
+        function handleDashboardTableClick(e) {
+            const btn = e.target.closest('button');
+            if(!btn || btn.classList.contains('mobile-menu-trigger')) return; // Ignore trigger
+            
+            const examId = parseInt(btn.dataset.id);
+            
+            if (btn.classList.contains('approve-exam')) {
+                performAdminAction(() => { 
+                    state.db.updateExamStatus(examId, 'approved'); 
+                    updateTables(); 
+                    updateStats(); 
+                    showToast("Exam approved.", "success");
+                });
+            } else if (btn.classList.contains('reject-exam')) {
+                performAdminAction(() => { 
+                    state.db.updateExamStatus(examId, 'rejected'); 
+                    updateTables(); 
+                    updateStats(); 
+                    showToast("Exam rejected.", "info");
+                });
+            } else if (btn.classList.contains('edit-exam')) {
+                performAdminAction(() => { 
+                    openExamEditor(examId); 
+                });
+            }
+        }
+        
+        function handleExamManagementClick(e) {
+            const target = e.target.closest('button');
+            if(!target || target.classList.contains('mobile-menu-trigger')) return;
+            
+            const id = parseInt(target.dataset.id);
+
+            if(target.classList.contains('btn-resource')) {
+                performAdminAction(() => {
+                    document.getElementById('resourceExamId').value = id;
+                    document.getElementById('resourceForm').reset();
+                    // Reset to default
+                    document.getElementById('resourceType').value = 'link';
+                    document.getElementById('pdfInputGroup').classList.add('hidden');
+                    document.getElementById('linkInputGroup').classList.remove('hidden');
+                    addResourceModal.style.display = 'flex';
+                });
+            } else if(target.classList.contains('btn-preview')) {
+                const url = target.dataset.url;
+                const type = target.dataset.type;
+                if(type === 'pdf') {
+                    document.getElementById('pdfContainer').innerHTML = `<iframe class="iframe-preview" src="${url}"></iframe>`;
+                    pdfPreviewModal.style.display = 'flex';
+                } else { window.open(url, '_blank'); }
+            } else if (target.classList.contains('edit-exam')) {
+                performAdminAction(() => { openExamEditor(id); });
+            } else if (target.classList.contains('delete-exam')) {
+                 performAdminAction(() => {
+                    const exam = state.db.findExamById(id);
+                    showConfirmation("Delete Exam?", `Are you sure you want to delete "${exam.title}"? This will also remove all results. This cannot be undone.`, () => {
+                        state.db.deleteExam(id);
+                        renderExamManagementTable();
+                        updateTables(); // NEW: Refresh dashboard tables
+                        updateStats();
+                        showToast("Exam deleted successfully.", "success");
+                    });
+                });
+            } else if (target.classList.contains('preview-exam-btn')) {
+                startExam(id, true);
+            }
+        }
+        
+        // --- NEW: Handle User Management Click ---
+        function handleUserManagementClick(e) {
+            const target = e.target.closest('button');
+            if (!target || target.classList.contains('mobile-menu-trigger')) return;
+            
+            const userId = parseInt(target.dataset.id);
+            const user = state.db.findUserById(userId);
+            if (!user) return;
+
+            if (target.classList.contains('edit-user')) {
+                performAdminAction(() => {
+                    openEditUserModal(userId);
+                });
+            } else if (target.classList.contains('deactivate-user')) {
+                performAdminAction(() => {
+                    showConfirmation("Deactivate User?", `Are you sure you want to deactivate ${user.name}? They will not be able to log in.`, () => {
+                        state.db.updateUser(userId, { status: 'deactivated' });
+                        updateTables();
+                        showToast("User deactivated.", "success");
+                    });
+                });
+            } else if (target.classList.contains('activate-user')) {
+                performAdminAction(() => {
+                    showConfirmation("Activate User?", `Are you sure you want to activate ${user.name}? They will be able to log in again.`, () => {
+                        state.db.updateUser(userId, { status: 'active' });
+                        updateTables();
+                        showToast("User activated.", "success");
+                    }, 'success'); // 'success' type for green button
+                });
+            }
+        }
+
+        // --- NEW: Open Edit User Modal ---
+        function openEditUserModal(userId) {
+            const user = state.db.findUserById(userId);
+            if (!user) {
+                showToast("Could not find user.", "error");
+                return;
+            }
+            
+            state.editingUserId = userId;
+            
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserNameInput').value = user.name;
+            document.getElementById('editUserRoleInput').value = user.role;
+            
+            editUserModal.style.display = 'flex';
+        }
+        
+        // --- NEW: Handle User Update ---
+        function handleUpdateUser(e) {
+            e.preventDefault();
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const newName = document.getElementById('editUserNameInput').value;
+            const newRole = document.getElementById('editUserRoleInput').value;
+            
+            state.db.updateUser(userId, { name: newName, role: newRole });
+            
+            editUserModal.style.display = 'none';
+            updateTables(); // Refresh the user list
+            showToast("User updated successfully.", "success");
+        }
+
+        // MODIFIED: This is now called *after* admin check
+        function handleBulkUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const exams = JSON.parse(event.target.result);
+                    if(Array.isArray(exams)) {
+                        // MODIFIED: Pass current user
+                        state.db.bulkImportExams(exams, state.currentUser);
+                        showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
+                        renderExamManagementTable();
+                        updateTables(); // FIXED: Refresh dashboard tables too
+                        updateStats();
+                    } else { showToast("Invalid JSON format. Expected an array.", "error"); }
+                } catch(err) { 
+                    showToast("Error parsing JSON file.", "error"); 
+                    console.error("JSON Parse Error:", err); // Added for debugging
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // Reset input
+        }
+
+        function exportExams() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.db.exams));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "exams_export.json");
+            document.body.appendChild(downloadAnchorNode); 
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast("Exams exported successfully.", "success");
+        }
+
+        function handleAddResource(e) {
+            e.preventDefault();
+            const examId = parseInt(document.getElementById('resourceExamId').value);
+            const type = document.getElementById('resourceType').value;
+            let resource = { type: type };
+            if(type === 'link') {
+                resource.url = document.getElementById('resourceLink').value;
+                if(!resource.url) { showToast("Please enter a valid URL.", "error"); return; }
+                resource.label = "External Link";
+            } else {
+                const fileInput = document.getElementById('resourcePdf');
+                if(fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    resource.url = URL.createObjectURL(file);
+                    resource.label = "PDF Document";
+                } else {
+                    showToast("Please select a PDF file to upload.", "error"); return;
+                }
+            }
+            state.db.addResourceToExam(examId, resource);
+            addResourceModal.style.display = 'none';
+            renderExamManagementTable();
+            showToast("Resource added successfully.", "success");
+        }
+
+        function renderExamManagementTable() {
+            manageExamsTableBody.innerHTML = '';
+            const isAdmin = state.currentUser.role === 'admin';
+            // document.getElementById('bulkUploadSection').classList.toggle('hidden', !isAdmin);
+            
+            const subjectMap = { 'math': 'Math', 'physics': 'Physics', 'chemistry': 'Chemistry', 'biology': 'Biology' };
+            const subjectMapMobile = { 'math': 'Mat', 'physics': 'Phy', 'chemistry': 'Chem', 'biology': 'Bio' };
+
+            const exams = state.db.exams;
+            if (exams.length === 0) {
+                manageExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="6"><i class="fas fa-file-excel"></i>No exams found.</td></tr>`;
+                return;
+            }
+
+            exams.forEach(exam => {
+                let resourceButtons = '';
+                if(exam.resources && exam.resources.length > 0) {
+                    exam.resources.forEach(r => {
+                        const icon = r.type === 'pdf' ? 'fa-file-pdf' : 'fa-link';
+                        resourceButtons += `<button class="btn-icon btn-preview" data-url="${r.url}" data-type="${r.type}" title="View ${r.label}"><i class="fas ${icon}"></i></button>`;
+                    });
+                } else {
+                    resourceButtons = `<span style="font-size: 0.8rem; color: var(--gray);">None</span>`;
+                }
+
+                const editButtons = `
+                    <div class="action-wrapper">
+                        <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                        <div class="action-buttons">
+                            <button class="action-btn preview-exam-btn" data-id="${exam.id}" title="Preview"><i class="fas fa-eye"></i> Preview</button>
+                            <button class="action-btn btn-resource" data-id="${exam.id}" title="Add Resource"><i class="fas fa-paperclip"></i> Resource</button>
+                            <button class="action-btn edit-exam" data-id="${exam.id}" title="Edit"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="action-btn reject-exam delete-exam" data-id="${exam.id}" title="Delete"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                `;
+                
+                const subLower = exam.subject.toLowerCase();
+                const fullSub = subjectMap[subLower] || exam.subject;
+                const shortSub = subjectMapMobile[subLower] || exam.subject.substring(0,3);
+                const subjectDisplay = `<span class="desktop-text">${fullSub}</span><span class="mobile-text">${shortSub}</span>`;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td data-label="Title">${exam.title}</td>
+                    <td data-label="Exam ID"><span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-weight: bold; user-select: all;">${exam.examCode}</span></td>
+                    <td data-label="Subject">${subjectDisplay}</td>
+                    <td data-label="Duration">${exam.duration === 0 ? 'Untimed' : exam.duration + ' mins'}</td>
+                    <td data-label="Resources" class="resources-cell">${resourceButtons}</td>
+                    <td data-label="Actions" class="admin-action-cell">${editButtons}</td>
+                `;
+                manageExamsTableBody.appendChild(row);
+            });
+        }
+        
+        function renderResultsTable() {
+            resultsTableBody.innerHTML = '';
+            const isAdmin = state.currentUser.role === 'admin';
+            
+            const results = state.db.results;
+            if(results.length === 0) {
+                resultsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-chart-bar"></i>No results found.</td></tr>`;
+                return;
+            }
+            
+            results.forEach(r => {
+                 const row = document.createElement('tr');
+                 const percentage = Math.round((r.score / r.total) * 100);
+                 
+                 const deleteBtn = isAdmin ? `
+                     <div class="action-wrapper">
+                         <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                         <div class="action-buttons">
+                             <button class="action-btn reset-result" data-id="${r.id}" title="Reset"><i class="fas fa-redo"></i> Reset/Delete</button>
+                         </div>
+                     </div>
+                 ` : '';
+                 
+                 row.innerHTML = `
+                     <td data-label="Student">${r.studentName}</td>
+                     <td data-label="Exam">${r.examTitle}</td>
+                     <td data-label="Score">${r.score} / ${r.total} (${percentage}%)</td>
+                     <td data-label="Date">${r.date}</td>
+                     <td data-label="Actions" class="admin-action-cell">${deleteBtn}</td>
+                 `;
+                 resultsTableBody.appendChild(row);
+            });
+        }
+        
+        function handleResultsTableClick(e) {
+            const btn = e.target.closest('button');
+            if(!btn || btn.classList.contains('mobile-menu-trigger')) return;
+            
+            const id = parseInt(btn.dataset.id);
+            if(btn.classList.contains('reset-result')) {
+                performAdminAction(() => {
+                    const result = state.db.results.find(r=>r.id===id);
+                    showConfirmation("Delete Result?", `Are you sure you want to delete this exam result for ${result.studentName}? This allows them to retake the exam.`, () => {
+                        state.db.deleteResult(id);
+                        renderResultsTable();
+                        updateStats();
+                        showToast("Result deleted.", "success");
+                    });
+                });
+            }
+        }
+
+        // --- Auth functions ---
+        function switchAuthTab(tabName) {
+            authTabs.forEach(tab => tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName));
+            if (tabName === 'login') { loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); } 
+            else { loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const button = document.getElementById('loginButton');
+            setButtonLoading(button, true);
+            
+            // Simulate API delay
+            setTimeout(() => {
+                const user = state.db.findUserByEmail(document.getElementById('loginEmail').value);
+                setButtonLoading(button, false);
+                
+                if (user && user.password === document.getElementById('loginPassword').value) {
+                    // NEW: Check user status
+                    if (user.status === 'deactivated') {
+                        showToast('Your account is deactivated. Please contact an admin.', 'error');
+                        return;
+                    }
+                    state.currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    showApp(); 
+                    updateUI();
+                } else { 
+                    showToast('Invalid email or password', 'error');
+                }
+            }, 500);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const button = document.getElementById('registerButton');
+            setButtonLoading(button, true);
+
+            // Simulate API delay
+            setTimeout(() => {
+                const email = document.getElementById('registerEmail').value;
+                setButtonLoading(button, false);
+
+                if (state.db.findUserByEmail(email)) { 
+                    showToast('User with this email already exists', 'error');
+                    return; 
+                }
+                state.db.createUser({
+                    name: document.getElementById('registerName').value,
+                    email: email,
+                    password: document.getElementById('registerPassword').value,
+                    role: document.getElementById('registerRole').value
+                });
+                showToast('Registration successful! Please log in.', 'success');
+                registerForm.reset(); 
+                switchAuthTab('login');
+            }, 500);
+        }
+
+        function handleLogout() {
+            state.currentUser = null; 
+            localStorage.removeItem('currentUser');
+            handleBackToDashboard(); 
+            closeSidebar(); 
+            showAuth();
+        }
+
+        function showAuth() { authScreen.classList.remove('hidden'); appScreen.classList.add('hidden'); }
+        function showApp() { authScreen.classList.add('hidden'); appScreen.classList.remove('hidden'); }
+
+        function updateUI() {
+            if (state.currentUser) {
+                document.getElementById('userName').textContent = state.currentUser.name;
+                document.getElementById('userEmail').textContent = state.currentUser.email;
+                document.getElementById('userAvatar').textContent = state.currentUser.name.charAt(0).toUpperCase();
+                
+                const roleBadge = document.getElementById('userRoleBadge');
+                roleBadge.textContent = state.currentUser.role.toUpperCase();
+                roleBadge.className = `role-badge role-${state.currentUser.role}`;
+                
+                const isAdmin = state.currentUser.role === 'admin';
+                const isStudent = state.currentUser.role === 'student';
+                
+                // NEW: Toggle admin class on body
+                document.body.classList.toggle('is-admin', isAdmin);
+                
+                // NEW: control visibility of buttons on exams page
+                document.getElementById('addExamBtn').style.display = isAdmin ? 'flex' : 'none';
+                document.getElementById('downloadExamsBtn').style.display = isAdmin ? 'flex' : 'none';
+                // MODIFIED: Show new bulk upload button
+                document.getElementById('bulkUploadBtn').style.display = isAdmin ? 'flex' : 'none';
+                
+                document.querySelector('.nav-link[data-page="users"]').style.display = isStudent ? 'none' : 'flex';
+                document.querySelector('.nav-link[data-page="exams"]').style.display = isStudent ? 'none' : 'flex';
+                document.querySelector('.nav-link[data-page="takeExam"]').style.display = isStudent ? 'flex' : 'none';
+                
+                updateStats(); 
+                updateTables();
+            }
+        }
+
+        function switchPage(page) {
+            state.currentPage = page;
+            pages.forEach(p => p.classList.add('hidden'));
+            const pageElement = document.getElementById(`${page}Page`);
+            if (pageElement) pageElement.classList.remove('hidden');
+            else document.getElementById('dashboardPage').classList.remove('hidden');
+        }
+
+        function switchTab(tabId) {
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        }
+
+        function updateStats() {
+            document.getElementById('totalUsers').textContent = state.db.users.length;
+            document.getElementById('totalTeachers').textContent = state.db.users.filter(u => u.role === 'teacher').length;
+            document.getElementById('totalStudents').textContent = state.db.users.filter(u => u.role === 'student').length;
+            document.getElementById('totalExams').textContent = state.db.exams.length;
+            document.getElementById('completedExams').textContent = state.db.results.length;
+        }
+
+        // MODIFIED: Added forceRedraw param
+        function updateTables(forceRedraw = false) {
+            // Only redraw if the page is active or forced
+            if (state.currentPage === 'dashboard' || forceRedraw) {
+                renderDashboardPendingTable();
+                renderDashboardRecentTable();
+                renderDashboardUserTable();
+            }
+            if (state.currentPage === 'users' || forceRedraw) {
+                renderManageUserTable();
+            }
+        }
+        
+        function renderDashboardPendingTable() {
+            pendingExamsTableBody.innerHTML = '';
+            const isAdmin = state.currentUser.role === 'admin';
+            
+            const pendingExams = state.db.exams.filter(exam => exam.status === 'pending');
+            if (pendingExams.length === 0) {
+                pendingExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-check-circle"></i>No pending exams.</td></tr>`;
+            } else {
+                pendingExams.forEach(exam => {
+                    const editButtons = `
+                        <div class="action-wrapper">
+                            <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                            <div class="action-buttons">
+                                <button class="action-btn edit-exam" data-id="${exam.id}"><i class="fas fa-edit"></i> Edit</button>
+                                <button class="action-btn approve-exam" data-id="${exam.id}"><i class="fas fa-check"></i> Approve</button>
+                                <button class="action-btn reject-exam" data-id="${exam.id}"><i class="fas fa-times"></i> Reject</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td data-label="Title">${exam.title}</td><td data-label="Teacher">${exam.teacher}</td><td data-label="Questions">${exam.questions.length}</td><td data-label="Status"><span class="status status-pending">Pending</span></td><td data-label="Actions" class="admin-action-cell">${editButtons}</td>`;
+                    pendingExamsTableBody.appendChild(row);
+                });
+            }
+        }
+        
+        function renderDashboardRecentTable() {
+             recentExamsTableBody.innerHTML = '';
+             const subjectMap = { 'math': 'Math', 'physics': 'Physics', 'chemistry': 'Chemistry', 'biology': 'Biology' };
+             const subjectMapMobile = { 'math': 'Mat', 'physics': 'Phy', 'chemistry': 'Chem', 'biology': 'Bio' };
+
+             const recentExams = state.db.exams.filter(exam => exam.status === 'approved');
+             if (recentExams.length === 0) {
+                 recentExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-file-alt"></i>No approved exams.</td></tr>`;
+             } else {
+                 recentExams.forEach(exam => {
+                     const row = document.createElement('tr');
+                     const participantCount = state.db.results.filter(r => r.examId === exam.id).length;
+                     
+                     const subLower = exam.subject.toLowerCase();
+                     const fullSub = subjectMap[subLower] || exam.subject;
+                     const shortSub = subjectMapMobile[subLower] || exam.subject.substring(0,3);
+                     const subjectDisplay = `<span class="desktop-text">${fullSub}</span><span class="mobile-text">${shortSub}</span>`;
+                     
+                     row.innerHTML = `<td data-label="Title">${exam.title}</td><td data-label="Subject">${subjectDisplay}</td><td data-label="Questions">${exam.questions.length}</td><td data-label="Participants">${participantCount}</td><td style="min-width: 60px;" data-label="Actions" class="admin-action-cell"></td>`;
+                     recentExamsTableBody.appendChild(row);
+                 });
+             }
+        }
+
+        // NEW: Refactored user table rendering
+        function renderUserTable(tbody, userList, showAll) {
+            tbody.innerHTML = '';
+            const usersToShow = showAll ? userList : userList.slice(0, 3);
+
+            if (usersToShow.length === 0) {
+                const colSpan = (tbody.id === "usersTableBody") ? 4 : 5;
+                tbody.innerHTML = `<tr class="empty-state-row"><td colspan="${colSpan}"><i class="fas fa-user-slash"></i>No users found.</td></tr>`;
+                return;
+            }
+            
+            // Format date helper
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            };
+
+            usersToShow.forEach(user => {
+                const row = document.createElement('tr');
+                const userStatus = user.status || 'active';
+                const statusClass = userStatus === 'active' ? 'status-approved' : 'status-deactivated';
+                const statusText = userStatus === 'active' ? 'Active' : 'Deactivated';
+                
+                // Dashboard User List
+                if (tbody.id === "usersTableBody") {
+                    row.innerHTML = `
+                        <td data-label="Name">${user.name}</td>
+                        <td data-label="Role">${user.role}</td>
+                        <td data-label="Joined">${formatDate(user.joinedDate)}</td>
+                        <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
+                    `;
+                } 
+                // Manage User List
+                else {
+                    let statusButton;
+                    if (userStatus === 'active') {
+                        statusButton = `<button class="action-btn deactivate-user" data-id="${user.id}" title="Deactivate User"><i class="fas fa-user-slash"></i> Deactivate</button>`;
+                    } else {
+                        statusButton = `<button class="action-btn activate-user" data-id="${user.id}" title="Activate User"><i class="fas fa-user-check"></i> Activate</button>`;
+                    }
+
+                    const adminButton = (state.currentUser.role === 'admin' && user.id !== state.currentUser.id) ? `
+                        <div class="action-wrapper">
+                             <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                             <div class="action-buttons">
+                                 <button class="action-btn edit-user" data-id="${user.id}" title="Edit User"><i class="fas fa-edit"></i> Edit User</button>
+                                 ${statusButton}
+                             </div>
+                         </div>
+                    ` : '';
+                    
+                    row.innerHTML = `
+                        <td data-label="Name" style="font-weight: 600;">${user.name} ${user.id === state.currentUser.id ? '(You)' : ''}</td>
+                        <td data-label="Email"><span style="font-size: 0.85rem;">${user.email}</span></td>
+                        <td data-label="Role"><span class="role-badge role-${user.role}">${user.role}</span></td>
+                        <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
+                        <td data-label="Actions" class="admin-action-cell">${adminButton}</td>
+                    `;
+                }
+                tbody.appendChild(row);
+            });
+        }
+        
+        // NEW: Separate render functions for user tables
+        function renderDashboardUserTable() {
+            const allUsers = state.db.users.sort((a, b) => new Date(b.joinedDate) - new Date(a.joinedDate)); // Sort by most recent
+            const isExpanded = document.getElementById('dashboardUserListContainer').classList.contains('expanded');
+            renderUserTable(usersTableBody, allUsers, isExpanded);
+            
+            // Toggle "Show all" button
+            showAllUsersBtn.style.display = (allUsers.length > 3) ? 'flex' : 'none';
+        }
+        
+        function renderManageUserTable() {
+            let filteredUsers = state.db.users;
+            let titleText = "User Management";
+            
+            if (state.userFilter === 'teacher') { filteredUsers = state.db.users.filter(u => u.role === 'teacher'); titleText += ": Teachers"; }
+            else if (state.userFilter === 'student') { filteredUsers = state.db.users.filter(u => u.role === 'student'); titleText += ": Students"; }
+            else { titleText += ": All Users"; }
+            
+            usersPageTitle.textContent = titleText;
+            
+            const isExpanded = document.getElementById('manageUserListContainer').classList.contains('expanded');
+            renderUserTable(manageUsersTableBody, filteredUsers, isExpanded);
+            
+            // Toggle "Show all" button
+            showAllManageUsersBtn.style.display = (filteredUsers.length > 3) ? 'flex' : 'none';
+        }
+
+        function handleCreateExam(e) {
+            e.preventDefault();
+            const newExam = state.db.createExam({
+                title: document.getElementById('examTitleInput').value,
+                subject: document.getElementById('examSubject').value,
+                scheduledDate: document.getElementById('examDate').value,
+                duration: parseInt(document.getElementById('examDurationInput').value),
+                teacher: state.currentUser.name,
+                teacherId: state.currentUser.id, // NEW: Store teacher ID
+                status: state.currentUser.role === 'admin' ? 'approved' : 'pending',
+            });
+            addExamModal.style.display = 'none'; examForm.reset();
+            updateTables(); updateStats();
+            showToast("Exam created! Add questions now.", "success");
+            openExamEditor(newExam.id);
+        }
+
+        // --- NEW: Handle Joining an exam by ID ---
+        function handleJoinExam(e) {
+            e.preventDefault();
+            const button = document.getElementById('joinExamButton');
+            setButtonLoading(button, true);
+            
+            setTimeout(() => {
+                // MODIFIED: Added .trim() to remove whitespace
+                const examCode = joinExamCodeInput.value.trim();
+                const exam = state.db.findExamByCode(examCode);
+                setButtonLoading(button, false);
+
+                if (!exam) {
+                    showToast("Invalid Exam ID. Please try again.", "error");
+                    return;
+                }
+                
+                if (exam.status !== 'approved') {
+                    showToast("This exam is not yet approved or is pending.", "error");
+                    return;
+                }
+                
+                if (exam.questions.length === 0) {
+                    showToast("This exam has no questions.", "error");
+                    return;
+                }
+                
+                if (state.db.hasStudentTakenExam(state.currentUser.id, exam.id)) {
+                    showToast("You have already completed this exam.", "error");
+                    return;
+                }
+                
+                // All checks passed
+                joinExamModal.style.display = 'none';
+                startExam(exam.id);
+                
+            }, 500);
+        }
+
+        function startExam(examId, isPreview = false) {
+            const exam = state.db.findExamById(examId);
+            if (!exam) return;
+            
+            state.currentExam = exam; 
+            state.currentQuestionIndex = 0; 
+            state.userAnswers = new Array(exam.questions.length).fill(null); 
+            state.timeRemaining = exam.duration * 60;
+            state.isPreviewMode = isPreview;
+            
+            document.getElementById('examTitle').textContent = exam.title + (isPreview ? " (Preview Mode)" : "");
+            document.getElementById('examDuration').textContent = exam.duration === 0 ? "Unlimited" : exam.duration;
+            document.getElementById('totalQuestions').textContent = exam.questions.length;
+            
+            document.getElementById('resultDisplay').classList.add('hidden');
+            document.getElementById('questionContainer').classList.remove('hidden');
+            document.getElementById('activeExamControls').classList.remove('hidden');
+            document.getElementById('submitExam').innerText = isPreview ? "Finish Preview" : "Submit Exam";
+
+            loadQuestion(state.currentQuestionIndex); 
+            if(!isPreview && exam.duration > 0) startTimer();
+            else document.getElementById('timeRemaining').textContent = isPreview ? "N/A (Preview)" : "Unlimited";
+            
+            switchPage('takeExam');
+        }
+
+        function loadQuestion(index) {
+            if (!state.currentExam) return;
+            const q = state.currentExam.questions[index];
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('currentQuestion').textContent = index + 1;
+            examOptionsContainer.innerHTML = '';
+            q.options.forEach((optionText, i) => {
+                const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
+                div.innerHTML = `<input type="radio" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
+                examOptionsContainer.appendChild(div);
+                if (state.userAnswers[index] === i) { div.querySelector('input').checked = true; div.classList.add('selected'); }
+            });
+            
+            prevQuestionBtn.disabled = index === 0;
+            
+            const isLast = index === state.currentExam.questions.length - 1;
+            nextQuestionBtn.classList.toggle('hidden', isLast);
+            submitExamBtn.classList.toggle('hidden', !isLast);
+        }
+        
+        function saveAnswer() {
+            if(state.isPreviewMode) return;
+            const selected = document.querySelector('#examOptionsContainer input:checked');
+            if (selected) state.userAnswers[state.currentQuestionIndex] = parseInt(selected.value);
+        }
+
+        function handleNextQuestion() { saveAnswer(); if (state.currentQuestionIndex < state.currentExam.questions.length - 1) { state.currentQuestionIndex++; loadQuestion(state.currentQuestionIndex); }}
+        function handlePrevQuestion() { saveAnswer(); if (state.currentQuestionIndex > 0) { state.currentQuestionIndex--; loadQuestion(state.currentQuestionIndex); }}
+        
+        function startTimer() {
+            if (state.examTimer) clearInterval(state.examTimer);
+            const el = document.getElementById('timeRemaining');
+            state.examTimer = setInterval(() => {
+                state.timeRemaining--;
+                const m = Math.floor(state.timeRemaining / 60), s = state.timeRemaining % 60;
+                el.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                if (state.timeRemaining <= 0) { 
+                    clearInterval(state.examTimer); 
+                    showToast("Time's up! Submitting exam.", "warning");
+                    handleSubmitExam(); 
+                }
+            }, 1000);
+        }
+
+        function handleSubmitExam() {
+            saveAnswer(); 
+            if (state.examTimer) clearInterval(state.examTimer);
+            if (!state.currentExam) return;
+            
+            if(state.isPreviewMode) {
+                handleBackToDashboard();
+                showToast("Preview finished.", "info");
+                return;
+            }
+
+            let score = 0; 
+            state.userAnswers.forEach((a, i) => { if (a === state.currentExam.questions[i].correctAnswer) score++; });
+            
+            state.db.saveResult({
+                studentId: state.currentUser.id,
+                studentName: state.currentUser.name,
+                examId: state.currentExam.id,
+                examTitle: state.currentExam.title,
+                score: score,
+                total: state.currentExam.questions.length
+            });
+            
+            document.getElementById('questionContainer').classList.add('hidden');
+            document.getElementById('activeExamControls').classList.add('hidden');
+            document.getElementById('resultDisplay').classList.remove('hidden');
+            document.getElementById('finalScoreDisplay').textContent = `${score} / ${state.currentExam.questions.length}`;
+            showToast("Exam submitted successfully!", "success");
+        }
+        
+        function openExamEditor(examId) {
+            const exam = state.db.findExamById(examId); if (!exam) return;
+            // MODIFIED: Added console.log for debugging
+            console.log('Opening editor for exam:', exam);
+            state.editingExamId = examId; 
+            examEditorTitle.textContent = `Edit Exam: ${exam.title}`;
+            
+            document.getElementById('editExamTitleInput').value = exam.title;
+            document.getElementById('editExamSubjectInput').value = exam.subject;
+            document.getElementById('editExamDurationInput').value = exam.duration;
+            
+            renderQuestionList(); 
+            handleNavClick('examEditor');
+        }
+        
+        function handleUpdateExamDetails(e) {
+            e.preventDefault();
+            state.db.updateExam(state.editingExamId, {
+                title: document.getElementById('editExamTitleInput').value,
+                subject: document.getElementById('editExamSubjectInput').value,
+                duration: parseInt(document.getElementById('editExamDurationInput').value)
+            });
+            showToast("Exam details updated.", "success");
+        }
+
+        function renderQuestionList() {
+            const exam = state.db.findExamById(state.editingExamId); if (!exam) return;
+            questionList.innerHTML = ''; 
+            questionCount.textContent = exam.questions.length;
+            
+            if(exam.questions.length === 0) {
+                questionList.classList.add('empty-list');
+                return;
+            }
+            questionList.classList.remove('empty-list');
+
+            exam.questions.forEach((q, index) => {
+                const li = document.createElement('li'); li.className = 'question-list-item';
+                
+                const optionsHtml = q.options.map((opt, i) => 
+                    `<li class="${i === q.correctAnswer ? 'correct' : ''}">${i+1}. ${opt}</li>`
+                ).join('');
+                
+                li.innerHTML = `
+                    <div class="question-list-item-header">
+                        <h4>${index + 1}. ${q.question}</h4>
+                        <div>
+                            <button class="btn-icon edit-question" data-index="${index}"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon danger delete-question" data-index="${index}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <ul class="question-list-item-options">${optionsHtml}</ul>
+                `;
+                questionList.appendChild(li);
+            });
+        }
+        
+        function handleAddQuestion(e) {
+            e.preventDefault();
+            const correctInput = addQuestionForm.querySelector('input[name="correctAnswer"]:checked');
+            if(!correctInput) {
+                showToast("Please select a correct answer.", "error");
+                return;
+            }
+            const q = {
+                question: document.getElementById('questionTextInput').value,
+                options: [1,2,3,4].map(i => document.getElementById(`option${i}Input`).value),
+                correctAnswer: parseInt(correctInput.value)
+            };
+            state.db.addQuestionToExam(state.editingExamId, q); 
+            renderQuestionList(); 
+            addQuestionForm.reset();
+            showToast("Question added.", "success");
+        }
+        
+        function handleDeleteQuestion(examId, qIndex) { 
+             showConfirmation("Delete Question?", `Are you sure you want to delete question ${qIndex + 1}?`, () => {
+                state.db.deleteQuestionFromExam(examId, qIndex); 
+                renderQuestionList(); 
+                showToast("Question deleted.", "success");
+             });
+        }
+        
+        function openEditQuestionModal(examId, qIndex) {
+            const q = state.db.findExamById(examId).questions[qIndex]; if (!q) return;
+            state.editingQuestionIndex = qIndex;
+            document.getElementById('editQuestionTextInput').value = q.question;
+            [0,1,2,3].forEach(i => document.getElementById(`editOption${i+1}Input`).value = q.options[i]);
+            editQuestionForm.querySelector(`input[value="${q.correctAnswer}"]`).checked = true;
+            editQuestionModal.style.display = 'flex';
+        }
+        
+        function handleUpdateQuestion(e) {
+            e.preventDefault();
+            const correctInput = editQuestionForm.querySelector('input[name="editCorrectAnswer"]:checked');
+            if(!correctInput) {
+                showToast("Please select a correct answer.", "error");
+                return;
+            }
+            const q = {
+                question: document.getElementById('editQuestionTextInput').value,
+                options: [0,1,2,3].map(i => document.getElementById(`editOption${i+1}Input`).value),
+                correctAnswer: parseInt(correctInput.value)
+            };
+            state.db.updateQuestionInExam(state.editingExamId, state.editingQuestionIndex, q);
+            renderQuestionList(); 
+            editQuestionModal.style.display = 'none';
+            showToast("Question updated.", "success");
+        }
+
+        // MODIFIED: More robust DOM ready check
+        (function() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                // Document is already ready
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
