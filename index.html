@@ -554,6 +554,19 @@
          .table-container.scrollable-list table {
             border: none;
          }
+        
+        /* NEW: Scrollable list for exam table */
+        #manageExamListContainer.scrollable-list {
+            max-height: 300px; /* Adjust as needed */
+            overflow-y: auto;
+            border: none;
+        }
+        #manageExamListContainer.scrollable-list.expanded {
+            max-height: none; /* Show all */
+        }
+         #manageExamListContainer.scrollable-list table {
+            border: none;
+         }
 
         table {
             width: 100%;
@@ -609,6 +622,19 @@
             color: #ddd;
         }
 
+        /* NEW: Result row styling */
+        tr.result-retaken {
+            background: #ffebee; /* Light red */
+            color: #b71c1c;
+        }
+        tr.result-retaken td {
+            border-color: #ffcdd2;
+        }
+        tr.result-retaken:hover {
+            background: #ffcdd2;
+        }
+
+
         .status {
             padding: 5px 10px;
             border-radius: 20px;
@@ -620,6 +646,9 @@
         .status-approved { background: #d4edda; color: #155724; } /* MODIFIED: Swapped with completed */
         .status-completed { background: #d1ecf1; color: #0c5460; }
         .status-deactivated { background: #fff3cd; color: #856404; } /* NEW: Deactivated */
+        /* NEW: Result status */
+        .status-active { background: #d4edda; color: #155724; }
+        .status-retaken { background: #f8d7da; color: #721c24; }
 
 
         .action-btn {
@@ -641,6 +670,11 @@
         .action-btn.deactivate-user:hover { color: #c0392b; }
         .action-btn.activate-user { color: var(--secondary); }
         .action-btn.activate-user:hover { color: #27ae60; }
+        /* NEW: Action button colors for results */
+        .action-btn.reset-result { color: var(--warning); }
+        .action-btn.reset-result:hover { color: #d35400; }
+        .action-btn.delete-result { color: var(--danger); }
+        .action-btn.delete-result:hover { color: #c0392b; }
 
 
         /* NEW: Align resources cell to the right */
@@ -1312,7 +1346,7 @@
                     <div class="user-role">
                         <div class="role-badge role-admin" id="userRoleBadge">Admin</div>
                     </div>
-                    <ul class="nav-menu">
+                    <ul class="nav-menu" id="navMenu"> <!-- MODIFIED: Added ID -->
                         <li class="nav-item"><a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li class="nav-item"><a href="#" class="nav-link" data-page="users"><i class="fas fa-users"></i> User Management</a></li>
                         <li class="nav-item"><a href="#" class="nav-link" data-page="exams"><i class="fas fa-file-alt"></i> Exam Management</a></li>
@@ -1352,7 +1386,7 @@
                             </div>
                         </div>
 
-                        <div class="tabs">
+                        <div class="tabs" id="dashboardTabs"> <!-- MODIFIED: Added ID -->
                             <div class="tab active" data-tab="pending">Pending Approval</div>
                             <div class="tab" data-tab="recent">Recent Exams</div>
                             <div class="tab" data-tab="users">User Activity</div>
@@ -1562,7 +1596,8 @@
 
                          <!-- MODIFIED: Removed the large dropzone area -->
 
-                         <div class="table-container">
+                         <!-- MODIFIED: Added scrollable container wrapper -->
+                         <div class="table-container scrollable-list" id="manageExamListContainer">
                              <table id="manageExamsTable">
                                  <thead>
                                      <tr>
@@ -1577,6 +1612,10 @@
                                  <tbody></tbody>
                              </table>
                          </div>
+                         <!-- NEW: Show all exams button -->
+                         <button class="btn btn-sm" id="showAllManageExamsBtn" style="width: auto; margin-top: 10px; display: none;">
+                            <i class="fas fa-chevron-down"></i> Show all exams...
+                         </button>
                      </div>
 
                       <div id="resultsPage" class="page-content hidden">
@@ -1592,6 +1631,7 @@
                                          <th>Exam</th>
                                          <th>Score</th>
                                          <th>Date</th>
+                                         <th>Status</th> <!-- NEW: Added Status -->
                                          <th class="admin-action-header">Actions</th>
                                      </tr>
                                  </thead>
@@ -1798,6 +1838,43 @@
     </div>
 
     <script>
+        // --- Application State ---
+        // (This object holds all our "global" variables)
+        const state = {
+            currentUser: null,
+            currentPage: 'dashboard',
+            db: null, // Will be initialized in init()
+            currentExam: null,
+            currentQuestionIndex: 0,
+            userAnswers: [],
+            examTimer: null,
+            timeRemaining: 0,
+            editingExamId: null,
+            editingQuestionIndex: null,
+            editingUserId: null, 
+            userFilter: 'all',
+            isPreviewMode: false,
+            pendingAction: null,
+            pendingConfirmation: null, 
+        };
+
+        // --- DOM Element Globals ---
+        // (These will be assigned in init() after the DOM is loaded)
+        let authScreen, appScreen, loginForm, registerForm, logoutBtn, authTabs,
+            navMenu, pages, dashboardTabs, tabContents, addExamBtn, addExamModal, examForm,
+            pendingExamsTableBody, recentExamsTableBody, usersTableBody, manageUsersTableBody,
+            resultsTableBody, manageExamsTableBody, examOptionsContainer, prevQuestionBtn,
+            nextQuestionBtn, submitExamBtn, backToDashboardBtn, examDoneBtn, examEditorPage,
+            examEditorTitle, addQuestionForm, questionList, questionCount,
+            editorBackToDashboardBtn, editExamDetailsForm, editQuestionModal,
+            editQuestionForm, editUserModal, editUserForm, pdfPreviewModal,
+            addResourceModal, securityModal, joinExamModal, joinExamForm,
+            joinExamCodeInput, confirmationModal, statsContainer, bulkUploadBtn,
+            bulkJsonInput, downloadExamsBtn, mobileNavToggle, sidebar, sidebarClose,
+            overlay, usersPageTitle, showAllUsersBtn, showAllManageUsersBtn,
+            showAllManageExamsBtn;
+
+
         // Mock Database
         class MockDatabase {
             constructor() {
@@ -1912,7 +1989,8 @@
                 ];
 
                 this.results = [
-                    { id: 101, studentId: 3, studentName: "Student One", examId: 2, examTitle: "Physics Final (Grade 8)", score: 4, total: 5, date: new Date().toLocaleString() }
+                    // MODIFIED: Added status field
+                    { id: 101, studentId: 3, studentName: "Student One", examId: 2, examTitle: "Physics Final (Grade 8)", score: 4, total: 5, date: new Date().toLocaleString(), status: 'active' }
                 ];
                 
                 this.saveToStorage();
@@ -1925,7 +2003,7 @@
             }
             
             findUserByEmail(email) { return this.users.find(user => user.email === email); }
-            findUserById(id) { return this.users.find(user => user.id === id); } // NEW
+            findUserById(id) { return this.users.find(user => user.id === id); } 
             
             createUser(userData) {
                 const newUser = { 
@@ -1939,7 +2017,6 @@
                 return newUser;
             }
             
-            // NEW: Update User Method
             updateUser(userId, updates) {
                 const user = this.findUserById(userId);
                 if (user) {
@@ -1952,9 +2029,8 @@
             
             getExams() { return this.exams; }
             findExamById(id) { return this.exams.find(e => e.id === id); }
-            findExamByCode(code) { return this.exams.find(e => e.examCode && e.examCode.toUpperCase() === code.toUpperCase()); } // NEW
+            findExamByCode(code) { return this.exams.find(e => e.examCode && e.examCode.toUpperCase() === code.toUpperCase()); } 
             
-            // NEW: Generate 6-char Exam ID
             generateExamCode() {
                 let code;
                 const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
@@ -1988,9 +2064,8 @@
                  }
                  return null;
             }
-            deleteExam(examId) { // NEW
+            deleteExam(examId) { 
                 this.exams = this.exams.filter(e => e.id !== examId);
-                // Also delete associated results
                 this.results = this.results.filter(r => r.examId !== examId);
                 this.saveToStorage();
             }
@@ -2020,16 +2095,15 @@
                 }
             }
             
-            // MODIFIED: Accept importingUser
             bulkImportExams(examsArray, importingUser) {
                 examsArray.forEach(ex => {
                     const newExam = { 
                         ...ex, 
                         id: Date.now() + Math.floor(Math.random() * 1000), 
-                        examCode: this.generateExamCode(), // Assign unique code
+                        examCode: this.generateExamCode(), 
                         status: 'approved',
-                        teacher: importingUser.name, // NEW: Assign current user
-                        teacherId: importingUser.id  // NEW: Assign current user ID
+                        teacher: importingUser.name, 
+                        teacherId: importingUser.id  
                     };
                     this.exams.push(newExam);
                 });
@@ -2037,7 +2111,8 @@
             }
             
             saveResult(resultData) {
-                const newResult = { id: Date.now(), ...resultData, date: new Date().toLocaleString() };
+                // NEW: Add status to new results
+                const newResult = { id: Date.now(), ...resultData, date: new Date().toLocaleString(), status: 'active' };
                 this.results.push(newResult);
                 this.saveToStorage();
             }
@@ -2045,109 +2120,88 @@
                 this.results = this.results.filter(r => r.id !== resultId);
                 this.saveToStorage();
             }
+            // NEW: Method to update result status
+            updateResultStatus(resultId, status) {
+                const result = this.results.find(r => r.id === resultId);
+                if (result) {
+                    result.status = status;
+                    this.saveToStorage();
+                }
+            }
             hasStudentTakenExam(studentId, examId) {
-                return this.results.some(r => r.studentId === studentId && r.examId === examId);
+                // MODIFIED: Check for an 'active' result
+                return this.results.some(r => r.studentId === studentId && r.examId === examId && r.status === 'active');
             }
         }
 
-        // --- Application State ---
-        const state = {
-            currentUser: null,
-            currentPage: 'dashboard',
-            db: new MockDatabase(),
-            currentExam: null,
-            currentQuestionIndex: 0,
-            userAnswers: [],
-            examTimer: null,
-            timeRemaining: 0,
-            editingExamId: null,
-            editingQuestionIndex: null,
-            editingUserId: null, // NEW
-            userFilter: 'all',
-            isPreviewMode: false,
-            pendingAction: null,
-            pendingConfirmation: null, // NEW: For confirmation modal
-        };
-
-        // --- DOM Elements ---
-        const authScreen = document.getElementById('authScreen');
-        const appScreen = document.getElementById('appScreen');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const authTabs = document.querySelectorAll('.auth-tab');
-        const navLinks = document.querySelectorAll('.nav-link');
-        const pages = document.querySelectorAll('.page-content');
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const addExamBtn = document.getElementById('addExamBtn');
-        const addExamModal = document.getElementById('addExamModal');
-        const examForm = document.getElementById('examForm');
-        
-        const pendingExamsTableBody = document.getElementById('pendingExamsTable').querySelector('tbody');
-        const recentExamsTableBody = document.getElementById('recentExamsTable').querySelector('tbody');
-        const usersTableBody = document.getElementById('usersTable').querySelector('tbody');
-        const manageUsersTableBody = document.getElementById('manageUsersTable').querySelector('tbody');
-        const resultsTableBody = document.getElementById('resultsTable').querySelector('tbody');
-        const manageExamsTableBody = document.getElementById('manageExamsTable').querySelector('tbody');
-
-        const examOptionsContainer = document.getElementById('examOptionsContainer');
-        const prevQuestionBtn = document.getElementById('prevQuestion');
-        const nextQuestionBtn = document.getElementById('nextQuestion');
-        const submitExamBtn = document.getElementById('submitExam');
-        const backToDashboardBtn = document.getElementById('backToDashboardBtn');
-        const examDoneBtn = document.getElementById('examDoneBtn'); // NEW
-
-        const examEditorPage = document.getElementById('examEditorPage');
-        const examEditorTitle = document.getElementById('examEditorTitle');
-        const addQuestionForm = document.getElementById('addQuestionForm');
-        const questionList = document.getElementById('questionList');
-        const questionCount = document.getElementById('questionCount');
-        const editorBackToDashboardBtn = document.getElementById('editorBackToDashboardBtn');
-        const editExamDetailsForm = document.getElementById('editExamDetailsForm');
-        
-        const editQuestionModal = document.getElementById('editQuestionModal');
-        const editQuestionForm = document.getElementById('editQuestionForm');
-        const editUserModal = document.getElementById('editUserModal'); // NEW
-        const editUserForm = document.getElementById('editUserForm'); // NEW
-        const pdfPreviewModal = document.getElementById('pdfPreviewModal');
-        const addResourceModal = document.getElementById('addResourceModal');
-        const securityModal = document.getElementById('securityModal');
-        
-        // NEW: Exam ID Modal
-        const joinExamModal = document.getElementById('joinExamModal');
-        const joinExamForm = document.getElementById('joinExamForm');
-        const joinExamCodeInput = document.getElementById('joinExamCodeInput');
-        
-        // NEW: Confirmation Modal
-        const confirmationModal = document.getElementById('confirmationModal');
-
-        // MODIFIED: Get stats container
-        const statsContainer = document.getElementById('statsContainer');
-        
-        // MODIFIED: Get bulk upload button
-        const bulkUploadBtn = document.getElementById('bulkUploadBtn');
-        const bulkJsonInput = document.getElementById('bulkJsonInput');
-        const downloadExamsBtn = document.getElementById('downloadExamsBtn');
-
-        const mobileNavToggle = document.getElementById('mobileNavToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarClose = document.getElementById('sidebarClose');
-        const overlay = document.getElementById('overlay');
-        const usersPageTitle = document.getElementById('usersPageTitle');
-        
-        // NEW: User list "Show All" buttons
-        const showAllUsersBtn = document.getElementById('showAllUsersBtn');
-        const showAllManageUsersBtn = document.getElementById('showAllManageUsersBtn');
-
-
+        // --- Main App Initialization ---
         function init() {
+            // MODIFIED: Assign all element variables now that the DOM is ready
+            authScreen = document.getElementById('authScreen');
+            appScreen = document.getElementById('appScreen');
+            loginForm = document.getElementById('loginForm');
+            registerForm = document.getElementById('registerForm');
+            logoutBtn = document.getElementById('logoutBtn');
+            authTabs = document.querySelectorAll('.auth-tab');
+            navMenu = document.getElementById('navMenu'); // MODIFIED: Use ID
+            pages = document.querySelectorAll('.page-content');
+            dashboardTabs = document.getElementById('dashboardTabs'); // MODIFIED: Use ID
+            tabContents = document.querySelectorAll('.tab-content');
+            addExamBtn = document.getElementById('addExamBtn');
+            addExamModal = document.getElementById('addExamModal');
+            examForm = document.getElementById('examForm');
+            pendingExamsTableBody = document.getElementById('pendingExamsTable').querySelector('tbody');
+            recentExamsTableBody = document.getElementById('recentExamsTable').querySelector('tbody');
+            usersTableBody = document.getElementById('usersTable').querySelector('tbody');
+            manageUsersTableBody = document.getElementById('manageUsersTable').querySelector('tbody');
+            resultsTableBody = document.getElementById('resultsTable').querySelector('tbody');
+            manageExamsTableBody = document.getElementById('manageExamsTable').querySelector('tbody');
+            examOptionsContainer = document.getElementById('examOptionsContainer');
+            prevQuestionBtn = document.getElementById('prevQuestion');
+            nextQuestionBtn = document.getElementById('nextQuestion');
+            submitExamBtn = document.getElementById('submitExam');
+            backToDashboardBtn = document.getElementById('backToDashboardBtn');
+            examDoneBtn = document.getElementById('examDoneBtn');
+            examEditorPage = document.getElementById('examEditorPage');
+            examEditorTitle = document.getElementById('examEditorTitle');
+            addQuestionForm = document.getElementById('addQuestionForm');
+            questionList = document.getElementById('questionList');
+            questionCount = document.getElementById('questionCount');
+            editorBackToDashboardBtn = document.getElementById('editorBackToDashboardBtn');
+            editExamDetailsForm = document.getElementById('editExamDetailsForm');
+            editQuestionModal = document.getElementById('editQuestionModal');
+            editQuestionForm = document.getElementById('editQuestionForm');
+            editUserModal = document.getElementById('editUserModal');
+            editUserForm = document.getElementById('editUserForm');
+            pdfPreviewModal = document.getElementById('pdfPreviewModal');
+            addResourceModal = document.getElementById('addResourceModal');
+            securityModal = document.getElementById('securityModal');
+            joinExamModal = document.getElementById('joinExamModal');
+            joinExamForm = document.getElementById('joinExamForm');
+            joinExamCodeInput = document.getElementById('joinExamCodeInput');
+            confirmationModal = document.getElementById('confirmationModal');
+            statsContainer = document.getElementById('statsContainer');
+            bulkUploadBtn = document.getElementById('bulkUploadBtn');
+            bulkJsonInput = document.getElementById('bulkJsonInput');
+            downloadExamsBtn = document.getElementById('downloadExamsBtn');
+            mobileNavToggle = document.getElementById('mobileNavToggle');
+            sidebar = document.getElementById('sidebar');
+            sidebarClose = document.getElementById('sidebarClose');
+            overlay = document.getElementById('overlay');
+            usersPageTitle = document.getElementById('usersPageTitle');
+            showAllUsersBtn = document.getElementById('showAllUsersBtn');
+            showAllManageUsersBtn = document.getElementById('showAllManageUsersBtn');
+            showAllManageExamsBtn = document.getElementById('showAllManageExamsBtn');
+
+            // Initialize database
+            state.db = new MockDatabase();
+
+            // Check for saved user
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 state.currentUser = JSON.parse(savedUser);
-                // Re-verify user, in case they were deleted by retention policy
                 if (!state.db.findUserById(state.currentUser.id)) {
-                    handleLogout(); // Force logout if user no longer exists
+                    handleLogout(); 
                     return;
                 }
                 showApp();
@@ -2158,6 +2212,7 @@
             updateUI();
         }
 
+        // --- Event Listener Setup ---
         function setupEventListeners() {
             authTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -2169,10 +2224,8 @@
             registerForm.addEventListener('submit', handleRegister);
             logoutBtn.addEventListener('click', handleLogout);
             
-            // NEW: Join Exam Form
             joinExamForm.addEventListener('submit', handleJoinExam);
 
-            // NEW: Confirmation Modal Buttons
             document.getElementById('confirmCancelBtn').addEventListener('click', () => {
                 confirmationModal.style.display = 'none';
                 state.pendingConfirmation = null;
@@ -2185,22 +2238,28 @@
                 state.pendingConfirmation = null;
             });
             
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (link.dataset.page === 'users') {
-                        state.userFilter = 'all';
-                        updateTables();
-                    }
-                    handleNavClick(link.dataset.page);
-                    if (window.innerWidth <= 900) closeSidebar();
-                });
+            // MODIFIED: Event delegation for nav links
+            navMenu.addEventListener('click', (e) => {
+                const link = e.target.closest('.nav-link');
+                if (!link) return;
+
+                e.preventDefault();
+                if (link.dataset.page === 'users') {
+                    state.userFilter = 'all';
+                    updateTables();
+                }
+                if (link.dataset.page === 'exams') {
+                    renderExamManagementTable();
+                }
+                handleNavClick(link.dataset.page);
+                if (window.innerWidth <= 900) closeSidebar();
             });
             
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    switchTab(tab.getAttribute('data-tab'));
-                });
+            // MODIFIED: Event delegation for dashboard tabs
+            dashboardTabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('.tab');
+                if (!tab) return;
+                switchTab(tab.getAttribute('data-tab'));
             });
             
             addExamBtn.addEventListener('click', () => {
@@ -2224,18 +2283,18 @@
             pendingExamsTableBody.addEventListener('click', handleDashboardTableClick);
             recentExamsTableBody.addEventListener('click', handleDashboardTableClick);
             manageExamsTableBody.addEventListener('click', handleExamManagementClick);
-            manageUsersTableBody.addEventListener('click', handleUserManagementClick); // NEW
+            manageUsersTableBody.addEventListener('click', handleUserManagementClick); 
             resultsTableBody.addEventListener('click', handleResultsTableClick);
             
             submitExamBtn.addEventListener('click', handleSubmitExam);
             nextQuestionBtn.addEventListener('click', handleNextQuestion);
             prevQuestionBtn.addEventListener('click', handlePrevQuestion);
             
-            backToDashboardBtn.addEventListener('click', handleBackToDashboard); // For exam page
-            examDoneBtn.addEventListener('click', handleBackToDashboard); // For result page
+            backToDashboardBtn.addEventListener('click', handleBackToDashboard); 
+            examDoneBtn.addEventListener('click', handleBackToDashboard); 
             
             document.querySelectorAll('.back-to-dashboard-btn').forEach(btn => {
-                btn.addEventListener('click', handleBackToDashboard); // For management pages
+                btn.addEventListener('click', handleBackToDashboard); 
             });
             editorBackToDashboardBtn.addEventListener('click', handleBackToDashboard);
 
@@ -2260,18 +2319,17 @@
             });
             
             editQuestionForm.addEventListener('submit', handleUpdateQuestion);
-            editUserForm.addEventListener('submit', handleUpdateUser); // NEW
+            editUserForm.addEventListener('submit', handleUpdateUser); 
             editExamDetailsForm.addEventListener('submit', handleUpdateExamDetails);
 
             mobileNavToggle.addEventListener('click', openSidebar);
             sidebarClose.addEventListener('click', closeSidebar);
             overlay.addEventListener('click', closeSidebar);
             
-            // MODIFIED: Using event delegation on the container
             statsContainer.addEventListener('click', (e) => {
                 const card = e.target.closest('.stat-card.clickable');
-                if (!card) return; // Click wasn't on a card
-                if (!state.currentUser) return; // Safety check
+                if (!card) return; 
+                if (!state.currentUser) return; 
 
                 const page = card.dataset.page;
                 const filter = card.dataset.filter;
@@ -2281,13 +2339,14 @@
                     state.userFilter = filter || 'all';
                     updateTables(); 
                 }
+                if (page === 'exams') {
+                    renderExamManagementTable();
+                }
                 handleNavClick(page);
             });
 
-            // MODIFIED: Event listener for new upload button
             bulkUploadBtn.addEventListener('click', () => {
                 performAdminAction(() => {
-                    // This callback runs *after* admin code is verified
                     bulkJsonInput.click();
                 });
             });
@@ -2312,25 +2371,20 @@
                 state.pendingAction = null;
             });
 
-            // Mobile Action Menu Toggle Delegation
             document.body.addEventListener('click', (e) => {
                 const trigger = e.target.closest('.mobile-menu-trigger');
                 
-                // Close all other dropdowns
                 document.querySelectorAll('.action-buttons.show').forEach(el => {
                     if(!trigger || el !== trigger.closest('.action-wrapper').querySelector('.action-buttons')) {
                         el.classList.remove('show');
-                        el.classList.remove('drop-up'); // NEW: Clean up drop-up class
+                        el.classList.remove('drop-up'); 
                     }
                 });
 
-                // Toggle the clicked one
                 if(trigger) {
                     const container = trigger.closest('.action-wrapper').querySelector('.action-buttons');
                     
-                    // NEW: Check if it should drop up
                     const rect = trigger.getBoundingClientRect();
-                    // Check if menu bottom would be off-screen. (Approx 150px for menu height)
                     const isNearBottom = (window.innerHeight - rect.bottom) < 160; 
                     if (isNearBottom) {
                         container.classList.add('drop-up');
@@ -2342,7 +2396,6 @@
                 }
             });
             
-            // NEW: User list "Show All" button events
             showAllUsersBtn.addEventListener('click', () => {
                 document.getElementById('dashboardUserListContainer').classList.toggle('expanded');
                 showAllUsersBtn.classList.toggle('active');
@@ -2351,7 +2404,7 @@
                 } else {
                     showAllUsersBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all...`;
                 }
-                updateTables(true); // Force redraw
+                updateTables(true); 
             });
             
             showAllManageUsersBtn.addEventListener('click', () => {
@@ -2362,11 +2415,22 @@
                 } else {
                     showAllManageUsersBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all users...`;
                 }
-                updateTables(true); // Force redraw
+                updateTables(true); 
+            });
+
+            showAllManageExamsBtn.addEventListener('click', () => {
+                document.getElementById('manageExamListContainer').classList.toggle('expanded');
+                showAllManageExamsBtn.classList.toggle('active');
+                if (showAllManageExamsBtn.classList.contains('active')) {
+                    showAllManageExamsBtn.innerHTML = `<i class="fas fa-chevron-up"></i> Show fewer`;
+                } else {
+                    showAllManageExamsBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all exams...`;
+                }
+                renderExamManagementTable(); 
             });
         }
         
-        // --- NEW: Toast Notifier ---
+        // --- Toast & Modal ---
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -2376,23 +2440,20 @@
             
             container.appendChild(toast);
             
-            // Trigger the slide-in animation
             setTimeout(() => {
                 toast.classList.add('show');
             }, 100);
             
-            // Automatically remove after 3 seconds
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => {
                     if (toast.parentElement) {
                         container.removeChild(toast);
                     }
-                }, 300); // Wait for slide-out animation
+                }, 300); 
             }, 3000);
         }
         
-        // --- NEW: Confirmation Modal ---
         function showConfirmation(title, text, onConfirm, type = 'danger') {
             document.getElementById('confirmTitle').textContent = title;
             document.getElementById('confirmText').textContent = text;
@@ -2415,7 +2476,6 @@
             confirmationModal.style.display = 'flex';
         }
         
-        // --- NEW: Loading Button State ---
         function setButtonLoading(button, isLoading) {
             button.disabled = isLoading;
             button.classList.toggle('loading', isLoading);
@@ -2443,21 +2503,21 @@
             state.pendingAction = null;
         }
 
+        // --- Navigation & UI ---
         function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('open'); }
         function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
         
         function handleNavClick(page) {
             if (page === 'takeExam') {
-                // NEW: Show modal instead of navigating
                 joinExamCodeInput.value = '';
                 joinExamModal.style.display = 'flex';
             } else {
                 switchPage(page);
-                if(page === 'exams') renderExamManagementTable();
                 if(page === 'results') renderResultsTable();
-                if(page === 'users') updateTables(); // NEW: Refresh users table on nav
+                if(page === 'users') updateTables(); 
             }
-            navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === page));
+            // MODIFIED: Use querySelectorAll on the menu
+            navMenu.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === page));
         }
         
         function handleBackToDashboard() {
@@ -2465,20 +2525,19 @@
             state.currentExam = null;
             state.editingExamId = null;
             state.isPreviewMode = false;
-            // MODIFIED: Navigate to dashboard page correctly
             switchPage('dashboard');
-            navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === 'dashboard'));
+            // MODIFIED: Use querySelectorAll on the menu
+            navMenu.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === 'dashboard'));
             
-            // MODIFIED: Added check for currentUser
             if (state.currentUser) {
-                updateTables(); // Refresh dashboard tables
-                updateStats(); // Refresh stats
+                updateTables(); 
+                updateStats(); 
             }
         }
         
         function handleDashboardTableClick(e) {
             const btn = e.target.closest('button');
-            if(!btn || btn.classList.contains('mobile-menu-trigger')) return; // Ignore trigger
+            if(!btn || btn.classList.contains('mobile-menu-trigger')) return; 
             
             const examId = parseInt(btn.dataset.id);
             
@@ -2513,7 +2572,6 @@
                 performAdminAction(() => {
                     document.getElementById('resourceExamId').value = id;
                     document.getElementById('resourceForm').reset();
-                    // Reset to default
                     document.getElementById('resourceType').value = 'link';
                     document.getElementById('pdfInputGroup').classList.add('hidden');
                     document.getElementById('linkInputGroup').classList.remove('hidden');
@@ -2534,7 +2592,7 @@
                     showConfirmation("Delete Exam?", `Are you sure you want to delete "${exam.title}"? This will also remove all results. This cannot be undone.`, () => {
                         state.db.deleteExam(id);
                         renderExamManagementTable();
-                        updateTables(); // NEW: Refresh dashboard tables
+                        updateTables(); 
                         updateStats();
                         showToast("Exam deleted successfully.", "success");
                     });
@@ -2544,7 +2602,6 @@
             }
         }
         
-        // --- NEW: Handle User Management Click ---
         function handleUserManagementClick(e) {
             const target = e.target.closest('button');
             if (!target || target.classList.contains('mobile-menu-trigger')) return;
@@ -2571,12 +2628,11 @@
                         state.db.updateUser(userId, { status: 'active' });
                         updateTables();
                         showToast("User activated.", "success");
-                    }, 'success'); // 'success' type for green button
+                    }, 'success'); 
                 });
             }
         }
 
-        // --- NEW: Open Edit User Modal ---
         function openEditUserModal(userId) {
             const user = state.db.findUserById(userId);
             if (!user) {
@@ -2593,7 +2649,6 @@
             editUserModal.style.display = 'flex';
         }
         
-        // --- NEW: Handle User Update ---
         function handleUpdateUser(e) {
             e.preventDefault();
             const userId = parseInt(document.getElementById('editUserId').value);
@@ -2603,11 +2658,10 @@
             state.db.updateUser(userId, { name: newName, role: newRole });
             
             editUserModal.style.display = 'none';
-            updateTables(); // Refresh the user list
+            updateTables(); 
             showToast("User updated successfully.", "success");
         }
 
-        // MODIFIED: This is now called *after* admin check
         function handleBulkUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
@@ -2616,20 +2670,19 @@
                 try {
                     const exams = JSON.parse(event.target.result);
                     if(Array.isArray(exams)) {
-                        // MODIFIED: Pass current user
                         state.db.bulkImportExams(exams, state.currentUser);
                         showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
                         renderExamManagementTable();
-                        updateTables(); // FIXED: Refresh dashboard tables too
+                        updateTables(); 
                         updateStats();
                     } else { showToast("Invalid JSON format. Expected an array.", "error"); }
                 } catch(err) { 
                     showToast("Error parsing JSON file.", "error"); 
-                    console.error("JSON Parse Error:", err); // Added for debugging
+                    console.error("JSON Parse Error:", err); 
                 }
             };
             reader.readAsText(file);
-            e.target.value = ''; // Reset input
+            e.target.value = ''; 
         }
 
         function exportExams() {
@@ -2669,20 +2722,27 @@
         }
 
         function renderExamManagementTable() {
+            const examListContainer = document.getElementById('manageExamListContainer');
+            const showAllBtn = document.getElementById('showAllManageExamsBtn');
+            const isExpanded = examListContainer.classList.contains('expanded');
+
             manageExamsTableBody.innerHTML = '';
             const isAdmin = state.currentUser.role === 'admin';
-            // document.getElementById('bulkUploadSection').classList.toggle('hidden', !isAdmin);
             
             const subjectMap = { 'math': 'Math', 'physics': 'Physics', 'chemistry': 'Chemistry', 'biology': 'Biology' };
             const subjectMapMobile = { 'math': 'Mat', 'physics': 'Phy', 'chemistry': 'Chem', 'biology': 'Bio' };
 
             const exams = state.db.exams;
-            if (exams.length === 0) {
+            const examsToShow = isExpanded ? exams : exams.slice(0, 3);
+            
+            showAllBtn.style.display = (exams.length > 3) ? 'flex' : 'none';
+
+            if (examsToShow.length === 0) {
                 manageExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="6"><i class="fas fa-file-excel"></i>No exams found.</td></tr>`;
                 return;
             }
 
-            exams.forEach(exam => {
+            examsToShow.forEach(exam => {
                 let resourceButtons = '';
                 if(exam.resources && exam.resources.length > 0) {
                     exam.resources.forEach(r => {
@@ -2729,7 +2789,8 @@
             
             const results = state.db.results;
             if(results.length === 0) {
-                resultsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-chart-bar"></i>No results found.</td></tr>`;
+                // MODIFIED: Added Status column, so colspan is 6
+                resultsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="6"><i class="fas fa-chart-bar"></i>No results found.</td></tr>`;
                 return;
             }
             
@@ -2737,11 +2798,23 @@
                  const row = document.createElement('tr');
                  const percentage = Math.round((r.score / r.total) * 100);
                  
-                 const deleteBtn = isAdmin ? `
+                 // NEW: Determine status
+                 const status = r.status || 'active'; // Default to active if undefined
+                 const statusClass = status === 'active' ? 'status-active' : 'status-retaken';
+                 const statusText = status === 'active' ? 'Active' : 'Retaken';
+                 
+                 // NEW: Add row class if retaken
+                 if (status === 'retaken') {
+                     row.classList.add('result-retaken');
+                 }
+
+                 // MODIFIED: Added new action buttons
+                 const actionButtons = isAdmin ? `
                      <div class="action-wrapper">
                          <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
                          <div class="action-buttons">
-                             <button class="action-btn reset-result" data-id="${r.id}" title="Reset"><i class="fas fa-redo"></i> Reset/Delete</button>
+                            ${status === 'active' ? `<button class="action-btn reset-result" data-id="${r.id}" title="Reset Attempt"><i class="fas fa-redo"></i> Reset Attempt</button>` : ''}
+                            <button class="action-btn delete-result" data-id="${r.id}" title="Delete"><i class="fas fa-trash"></i> Delete Result</button>
                          </div>
                      </div>
                  ` : '';
@@ -2751,7 +2824,8 @@
                      <td data-label="Exam">${r.examTitle}</td>
                      <td data-label="Score">${r.score} / ${r.total} (${percentage}%)</td>
                      <td data-label="Date">${r.date}</td>
-                     <td data-label="Actions" class="admin-action-cell">${deleteBtn}</td>
+                     <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
+                     <td data-label="Actions" class="admin-action-cell">${actionButtons}</td>
                  `;
                  resultsTableBody.appendChild(row);
             });
@@ -2762,15 +2836,27 @@
             if(!btn || btn.classList.contains('mobile-menu-trigger')) return;
             
             const id = parseInt(btn.dataset.id);
+            const result = state.db.results.find(r=>r.id===id);
+
+            // NEW: Handle Reset Attempt
             if(btn.classList.contains('reset-result')) {
                 performAdminAction(() => {
-                    const result = state.db.results.find(r=>r.id===id);
-                    showConfirmation("Delete Result?", `Are you sure you want to delete this exam result for ${result.studentName}? This allows them to retake the exam.`, () => {
+                    showConfirmation("Reset Attempt?", `Are you sure you want to mark this result for ${result.studentName} as 'Retaken'? This will allow the student to take the exam again.`, () => {
+                        state.db.updateResultStatus(id, 'retaken');
+                        renderResultsTable();
+                        showToast("Result marked as retaken.", "success");
+                    }, 'warning'); // Use warning color for reset
+                });
+            }
+            // NEW: Handle Delete Result
+            else if(btn.classList.contains('delete-result')) {
+                performAdminAction(() => {
+                    showConfirmation("Delete Result?", `Are you sure you want to PERMANENTLY delete this exam result for ${result.studentName}? This cannot be undone.`, () => {
                         state.db.deleteResult(id);
                         renderResultsTable();
                         updateStats();
                         showToast("Result deleted.", "success");
-                    });
+                    }, 'danger'); // Use danger color for delete
                 });
             }
         }
@@ -2787,13 +2873,11 @@
             const button = document.getElementById('loginButton');
             setButtonLoading(button, true);
             
-            // Simulate API delay
             setTimeout(() => {
                 const user = state.db.findUserByEmail(document.getElementById('loginEmail').value);
                 setButtonLoading(button, false);
                 
                 if (user && user.password === document.getElementById('loginPassword').value) {
-                    // NEW: Check user status
                     if (user.status === 'deactivated') {
                         showToast('Your account is deactivated. Please contact an admin.', 'error');
                         return;
@@ -2813,7 +2897,6 @@
             const button = document.getElementById('registerButton');
             setButtonLoading(button, true);
 
-            // Simulate API delay
             setTimeout(() => {
                 const email = document.getElementById('registerEmail').value;
                 setButtonLoading(button, false);
@@ -2858,18 +2941,16 @@
                 const isAdmin = state.currentUser.role === 'admin';
                 const isStudent = state.currentUser.role === 'student';
                 
-                // NEW: Toggle admin class on body
                 document.body.classList.toggle('is-admin', isAdmin);
                 
-                // NEW: control visibility of buttons on exams page
                 document.getElementById('addExamBtn').style.display = isAdmin ? 'flex' : 'none';
                 document.getElementById('downloadExamsBtn').style.display = isAdmin ? 'flex' : 'none';
-                // MODIFIED: Show new bulk upload button
                 document.getElementById('bulkUploadBtn').style.display = isAdmin ? 'flex' : 'none';
                 
-                document.querySelector('.nav-link[data-page="users"]').style.display = isStudent ? 'none' : 'flex';
-                document.querySelector('.nav-link[data-page="exams"]').style.display = isStudent ? 'none' : 'flex';
-                document.querySelector('.nav-link[data-page="takeExam"]').style.display = isStudent ? 'flex' : 'none';
+                // MODIFIED: Use querySelector on the menu
+                navMenu.querySelector('.nav-link[data-page="users"]').style.display = isStudent ? 'none' : 'flex';
+                navMenu.querySelector('.nav-link[data-page="exams"]').style.display = isStudent ? 'none' : 'flex';
+                navMenu.querySelector('.nav-link[data-page="takeExam"]').style.display = isStudent ? 'flex' : 'none';
                 
                 updateStats(); 
                 updateTables();
@@ -2885,9 +2966,10 @@
         }
 
         function switchTab(tabId) {
-            tabs.forEach(tab => tab.classList.remove('active'));
+            // MODIFIED: Use querySelectorAll on the tab container
+            dashboardTabs.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             tabContents.forEach(content => content.classList.remove('active'));
-            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            dashboardTabs.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
             document.getElementById(`${tabId}-tab`).classList.add('active');
         }
 
@@ -2896,12 +2978,11 @@
             document.getElementById('totalTeachers').textContent = state.db.users.filter(u => u.role === 'teacher').length;
             document.getElementById('totalStudents').textContent = state.db.users.filter(u => u.role === 'student').length;
             document.getElementById('totalExams').textContent = state.db.exams.length;
-            document.getElementById('completedExams').textContent = state.db.results.length;
+            // MODIFIED: Only count active results
+            document.getElementById('completedExams').textContent = state.db.results.filter(r => r.status === 'active').length;
         }
 
-        // MODIFIED: Added forceRedraw param
         function updateTables(forceRedraw = false) {
-            // Only redraw if the page is active or forced
             if (state.currentPage === 'dashboard' || forceRedraw) {
                 renderDashboardPendingTable();
                 renderDashboardRecentTable();
@@ -2909,6 +2990,9 @@
             }
             if (state.currentPage === 'users' || forceRedraw) {
                 renderManageUserTable();
+            }
+            if (state.currentPage === 'exams' || forceRedraw) {
+                renderExamManagementTable();
             }
         }
         
@@ -2950,7 +3034,8 @@
              } else {
                  recentExams.forEach(exam => {
                      const row = document.createElement('tr');
-                     const participantCount = state.db.results.filter(r => r.examId === exam.id).length;
+                     // MODIFIED: Only count active participants
+                     const participantCount = state.db.results.filter(r => r.examId === exam.id && r.status === 'active').length;
                      
                      const subLower = exam.subject.toLowerCase();
                      const fullSub = subjectMap[subLower] || exam.subject;
@@ -2963,7 +3048,6 @@
              }
         }
 
-        // NEW: Refactored user table rendering
         function renderUserTable(tbody, userList, showAll) {
             tbody.innerHTML = '';
             const usersToShow = showAll ? userList : userList.slice(0, 3);
@@ -2974,7 +3058,6 @@
                 return;
             }
             
-            // Format date helper
             const formatDate = (dateString) => {
                 const date = new Date(dateString);
                 return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -2986,7 +3069,6 @@
                 const statusClass = userStatus === 'active' ? 'status-approved' : 'status-deactivated';
                 const statusText = userStatus === 'active' ? 'Active' : 'Deactivated';
                 
-                // Dashboard User List
                 if (tbody.id === "usersTableBody") {
                     row.innerHTML = `
                         <td data-label="Name">${user.name}</td>
@@ -2995,7 +3077,6 @@
                         <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
                     `;
                 } 
-                // Manage User List
                 else {
                     let statusButton;
                     if (userStatus === 'active') {
@@ -3026,13 +3107,11 @@
             });
         }
         
-        // NEW: Separate render functions for user tables
         function renderDashboardUserTable() {
-            const allUsers = state.db.users.sort((a, b) => new Date(b.joinedDate) - new Date(a.joinedDate)); // Sort by most recent
+            const allUsers = state.db.users.sort((a, b) => new Date(b.joinedDate) - new Date(a.joinedDate)); 
             const isExpanded = document.getElementById('dashboardUserListContainer').classList.contains('expanded');
             renderUserTable(usersTableBody, allUsers, isExpanded);
             
-            // Toggle "Show all" button
             showAllUsersBtn.style.display = (allUsers.length > 3) ? 'flex' : 'none';
         }
         
@@ -3049,10 +3128,10 @@
             const isExpanded = document.getElementById('manageUserListContainer').classList.contains('expanded');
             renderUserTable(manageUsersTableBody, filteredUsers, isExpanded);
             
-            // Toggle "Show all" button
             showAllManageUsersBtn.style.display = (filteredUsers.length > 3) ? 'flex' : 'none';
         }
 
+        // --- Exam Functions ---
         function handleCreateExam(e) {
             e.preventDefault();
             const newExam = state.db.createExam({
@@ -3061,7 +3140,7 @@
                 scheduledDate: document.getElementById('examDate').value,
                 duration: parseInt(document.getElementById('examDurationInput').value),
                 teacher: state.currentUser.name,
-                teacherId: state.currentUser.id, // NEW: Store teacher ID
+                teacherId: state.currentUser.id, 
                 status: state.currentUser.role === 'admin' ? 'approved' : 'pending',
             });
             addExamModal.style.display = 'none'; examForm.reset();
@@ -3070,14 +3149,12 @@
             openExamEditor(newExam.id);
         }
 
-        // --- NEW: Handle Joining an exam by ID ---
         function handleJoinExam(e) {
             e.preventDefault();
             const button = document.getElementById('joinExamButton');
             setButtonLoading(button, true);
             
             setTimeout(() => {
-                // MODIFIED: Added .trim() to remove whitespace
                 const examCode = joinExamCodeInput.value.trim();
                 const exam = state.db.findExamByCode(examCode);
                 setButtonLoading(button, false);
@@ -3097,12 +3174,12 @@
                     return;
                 }
                 
+                // MODIFIED: Check for active exam
                 if (state.db.hasStudentTakenExam(state.currentUser.id, exam.id)) {
                     showToast("You have already completed this exam.", "error");
                     return;
                 }
                 
-                // All checks passed
                 joinExamModal.style.display = 'none';
                 startExam(exam.id);
                 
@@ -3200,6 +3277,7 @@
                 examTitle: state.currentExam.title,
                 score: score,
                 total: state.currentExam.questions.length
+                // status: 'active' is added by default in saveResult
             });
             
             document.getElementById('questionContainer').classList.add('hidden');
@@ -3209,10 +3287,10 @@
             showToast("Exam submitted successfully!", "success");
         }
         
+        // --- Exam Editor ---
         function openExamEditor(examId) {
             const exam = state.db.findExamById(examId); if (!exam) return;
-            // MODIFIED: Added console.log for debugging
-            console.log('Opening editor for exam:', exam);
+            console.log('Opening editor for exam:', exam); // Debug log
             state.editingExamId = examId; 
             examEditorTitle.textContent = `Edit Exam: ${exam.title}`;
             
@@ -3319,7 +3397,7 @@
             showToast("Question updated.", "success");
         }
 
-        // MODIFIED: More robust DOM ready check
+        // --- Start the App ---
         (function() {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
