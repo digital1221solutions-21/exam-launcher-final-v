@@ -1811,8 +1811,8 @@
              <form id="joinExamForm">
                  <div class="form-group">
                      <label for="joinExamCodeInput" style="text-align: left;">Exam ID</label>
-                     <!-- MODIFIED: Updated placeholder and maxlength to match generated code format -->
-                     <input type="text" id="joinExamCodeInput" class="form-control" placeholder="Enter Exam ID (e.g., EX-XXXX)" required maxlength="7" style="text-align: center; text-transform: uppercase;">
+                     <!-- MODIFIED: Removed maxlength to allow any length ID -->
+                     <input type="text" id="joinExamCodeInput" class="form-control" placeholder="Enter Exam ID (e.g., EX-XXXX)" required style="text-align: center; text-transform: uppercase;">
                  </div>
                  <button type="submit" class="btn" id="joinExamButton">
                      <span class="btn-text">
@@ -3155,7 +3155,7 @@
             setButtonLoading(button, true);
             
             setTimeout(() => {
-                const examCode = joinExamCodeInput.value.trim();
+                const examCode = joinExamCodeInput.value.trim(); // MODIFIED: Trim whitespace
                 const exam = state.db.findExamByCode(examCode);
                 setButtonLoading(button, false);
 
@@ -3398,6 +3398,7 @@
         }
 
         // --- Start the App ---
+        // MODIFIED: More robust DOM ready check
         (function() {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
@@ -3409,3 +3410,4 @@
     </script>
 </body>
 </html>
+
