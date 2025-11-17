@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWA</title>
+    <title>Star-APP</title>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -464,6 +464,12 @@
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
         }
+        
+        /* NEW: Container for header buttons */
+        .content-header-actions {
+            display: flex;
+            gap: 10px;
+        }
 
         .content-header h2 {
             color: var(--dark);
@@ -549,6 +555,7 @@
         /* MODIFIED: Added expanded state to stop clipping */
         .table-container.scrollable-list.expanded {
             max-height: none;
+            /* MODIFIED: Keep visible */
             overflow-y: visible;
         }
         .table-container.scrollable-list table {
@@ -676,7 +683,18 @@
         .exam-info {
             display: flex;
             justify-content: space-between;
+            align-items: center; /* NEW: Align items */
             margin-bottom: 20px;
+        }
+        
+        /* NEW: Fancy timer box */
+        .timer-box {
+            background: #e3f2fd;
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .question-card {
@@ -1215,8 +1233,13 @@
             .content-header h2 {
                 font-size: 1.3rem; 
             }
-            .content-header button {
+            /* MODIFIED: Target child buttons */
+            .content-header > .btn-sm,
+            .content-header > .content-header-actions {
                 width: 100%; 
+            }
+            .content-header > .content-header-actions > .btn-sm {
+                flex-grow: 1; /* Make buttons share width */
             }
 
             .stats-container { 
@@ -1525,7 +1548,8 @@
                                 <p>Duration: <span id="examDuration">60</span> minutes</p>
                             </div>
                             <div class="exam-info">
-                                <div>Time Remaining: <span id="timeRemaining">60:00</span></div>
+                                <!-- MODIFIED: Added timer-box class -->
+                                <div class="timer-box">Time Remaining: <span id="timeRemaining">60:00</span></div>
                                 <div>Question: <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span></div>
                             </div>
                             <div class="question-card" id="questionContainer">
@@ -1551,7 +1575,7 @@
                     <div id="examEditorPage" class="page-content hidden">
                         <div class="content-header">
                             <h2 id="examEditorTitle">Edit Exam</h2>
-                            <div>
+                            <div class="content-header-actions">
                                 <!-- MODIFIED: Moved Save button -->
                                 <!-- <button class="btn btn-sm btn-success" id="saveAndExitExamBtn"><i class="fas fa-save"></i> Save and Exit</button> -->
                                 <button class="btn btn-sm" id="editorBackToDashboardBtn"><i class="fas fa-arrow-left"></i> Back</button>
@@ -1670,7 +1694,9 @@
                     <div id="usersPage" class="page-content hidden">
                          <div class="content-header">
                              <h2 id="usersPageTitle">User Management</h2>
-                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             <div class="content-header-actions">
+                                <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             </div>
                          </div>
                          <!-- MODIFIED: Added scrollable-list class -->
                          <div class="table-container scrollable-list" id="manageUserListContainer">
@@ -1697,7 +1723,9 @@
                     <div id="examsPage" class="page-content hidden">
                          <div class="content-header">
                              <h2>Exam Management</h2>
-                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             <div class="content-header-actions">
+                                <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             </div>
                          </div>
                          
                          <!-- MODIFIED: Centered, stacked, and equal-width buttons -->
@@ -1742,8 +1770,9 @@
                     <div id="classesPage" class="page-content hidden">
                          <div class="content-header">
                              <h2>Class Management</h2>
-                             <div>
-                                <button class="btn btn-sm" id="createClassBtn"><i class="fas fa-plus"></i> Create Class</button>
+                             <!-- MODIFIED: Moved buttons to top -->
+                             <div class="content-header-actions">
+                                <button class="btn btn-sm admin-only" id="createClassBtn"><i class="fas fa-plus"></i> Create Class</button>
                                 <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
                              </div>
                          </div>
@@ -1771,7 +1800,9 @@
                     <div id="resultsPage" class="page-content hidden">
                          <div class="content-header">
                              <h2>Results & Analytics</h2>
-                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             <div class="content-header-actions">
+                                <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
+                             </div>
                          </div>
                          <div class="table-container">
                              <table id="resultsTable">
@@ -2030,10 +2061,8 @@
                 </div>
                 <div class="form-group">
                     <label for="classTeacherInput">Assign Teacher</label>
-                    <select id="classTeacherInput" class="form-control" required>
-                        <option value="">Select a Teacher</option>
-                        <!-- Teacher options will be dynamically injected here -->
-                    </select>
+                    <!-- MODIFIED: Changed to text input -->
+                    <input type="text" id="classTeacherInput" class="form-control" placeholder="Enter teacher's name" required>
                 </div>
                 <button type="submit" class="btn" style="width: 100%;">Save Class</button>
             </form>
@@ -2091,13 +2120,14 @@
         // --- DOM Elements ---
         // Moved all element selectors inside init() to prevent race conditions
         let authScreen, appScreen, loginForm, registerForm, logoutBtn, authTabs, navLinks, pages, tabs, tabContents, addExamBtn, addExamModal, examForm, pendingExamsTableBody, recentExamsTableBody, usersTableBody, manageUsersTableBody, resultsTableBody, manageExamsTableBody, examOptionsContainer, prevQuestionBtn, nextQuestionBtn, submitExamBtn, backToDashboardBtn, examDoneBtn, examEditorPage, examEditorTitle, addQuestionForm, questionList, questionCount, editorBackToDashboardBtn, editExamDetailsForm, editQuestionModal, editQuestionForm, editUserModal, editUserForm, pdfPreviewModal, addResourceModal, securityModal, joinExamModal, joinExamForm, joinExamCodeInput, confirmationModal, bulkJsonInput, bulkUploadBtn, downloadExamsBtn, mobileNavToggle, sidebar, sidebarClose, overlay, usersPageTitle, showAllUsersBtn, showAllManageUsersBtn, statsContainer, showAllManageExamsBtn, saveAndExitExamBtn, manageExamListContainer, createClassBtn, classesPage, manageClassesTableBody, classModal, classForm, manageStudentsModal, assignExamModal, manageClassListContainer, showAllManageClassesBtn;
-
+            
         // Mock Database
         class MockDatabase {
             constructor() {
                 this.users = JSON.parse(localStorage.getItem('examUsers')) || [];
                 this.exams = JSON.parse(localStorage.getItem('examExams')) || [];
                 this.results = JSON.parse(localStorage.getItem('examResults')) || [];
+                // NEW: Added classes
                 this.classes = JSON.parse(localStorage.getItem('examClasses')) || [];
                 
                 if (this.users.length === 0) {
@@ -2148,13 +2178,13 @@
                         }
                     });
                     
-                    // Anonymize classes from deleted teachers
+                    // NEW: Anonymize classes
                     this.classes.forEach(cls => {
                         if (deletedUserIds.includes(cls.teacherId)) {
                             cls.teacherName = "Archived User";
                             cls.teacherId = null;
                         }
-                        // Remove deleted students from classes
+                        // NEW: Remove deleted students from classes
                         cls.students = cls.students.filter(studentId => !deletedUserIds.includes(studentId));
                     });
                 }
@@ -2186,20 +2216,22 @@
                         id: 1, 
                         examCode: 'EX-A1B2',
                         title: 'Mathematics Midterm', 
-                        subject: 'Math', 
+                        subject: 'math', 
                         teacher: 'Teacher One (Old)', // This name will be anonymized
                         teacherId: 2, // ID of the old teacher
                         duration: 60, 
                         scheduledDate: '2023-11-15', 
                         status: 'pending', 
-                        questions: [{type: 'single', question: 'What is 2+2?', options:['3','4','5','6'], correctAnswer: 1}],
+                        questions: [
+                            { type: 'single', question: 'What is 2+2?', options:['3','4','5','6'], correctAnswer: 1 }
+                        ],
                         resources: [] 
                     },
                     { 
                         id: 2, 
                         examCode: 'EX-C3D4',
                         title: 'Physics Final (Grade 8)', 
-                        subject: 'Physics', 
+                        subject: 'physics', 
                         teacher: 'Teacher Two (New)',
                         teacherId: 4, // ID of the new teacher
                         duration: 45, 
@@ -2221,7 +2253,8 @@
                 ];
                 
                 this.classes = [
-                    { id: 1001, name: "Physics Grade 8", teacherId: 4, teacherName: "Teacher Two (New)", students: [3, 5], exams: [2] }
+                    { id: 1001, name: "Physics Grade 8", teacherId: 4, teacherName: "Teacher Two (New)", students: [3, 5], exams: [2] },
+                    { id: 1002, name: "Grade 12 Chem", teacherId: 2, teacherName: "Teacher One (Old)", students: [3], exams: [] }
                 ];
                 
                 this.saveToStorage();
@@ -2302,7 +2335,7 @@
                 this.exams = this.exams.filter(e => e.id !== examId);
                 // Also delete associated results
                 this.results = this.results.filter(r => r.examId !== examId);
-                // Remove from classes
+                // NEW: Remove from classes
                 this.classes.forEach(cls => {
                     cls.exams = cls.exams.filter(id => id !== examId);
                 });
@@ -2351,14 +2384,15 @@
             }
             
             saveResult(resultData) {
+                // NEW: Add active status
                 const newResult = { id: Date.now(), ...resultData, date: new Date().toLocaleString(), status: 'active' };
                 this.results.push(newResult);
                 this.saveToStorage();
             }
-            // NEW: Update result status
+            // MODIFIED: Update result status
             updateResultStatus(resultId, status) {
                 const result = this.results.find(r => r.id === resultId);
-                if(result) {
+                if (result) {
                     result.status = status;
                     this.saveToStorage();
                 }
@@ -2368,7 +2402,7 @@
                 this.saveToStorage();
             }
             hasStudentTakenExam(studentId, examId) {
-                // MODIFIED: Only check for 'active' results
+                // MODIFIED: Check for an *active* result
                 return this.results.some(r => r.studentId === studentId && r.examId === examId && r.status === 'active');
             }
             
@@ -2396,21 +2430,21 @@
             }
             addStudentToClass(classId, studentId) {
                 const cls = this.findClassById(classId);
-                if (cls && !cls.students.includes(studentId)) {
+                if(cls && !cls.students.includes(studentId)) {
                     cls.students.push(studentId);
                     this.saveToStorage();
                 }
             }
             removeStudentFromClass(classId, studentId) {
                 const cls = this.findClassById(classId);
-                if (cls) {
+                if(cls) {
                     cls.students = cls.students.filter(id => id !== studentId);
                     this.saveToStorage();
                 }
             }
             assignExamToClass(classId, examId) {
                 const cls = this.findClassById(classId);
-                if (cls && !cls.exams.includes(examId)) {
+                if(cls && !cls.exams.includes(examId)) {
                     cls.exams.push(examId);
                     this.saveToStorage();
                 }
@@ -2439,7 +2473,7 @@
 
         // --- Init Function ---
         function init() {
-            // --- DOM Element Selection ---
+            // Find all elements
             authScreen = document.getElementById('authScreen');
             appScreen = document.getElementById('appScreen');
             loginForm = document.getElementById('loginForm');
@@ -2497,7 +2531,6 @@
             showAllManageExamsBtn = document.getElementById('showAllManageExamsBtn');
             saveAndExitExamBtn = document.getElementById('saveAndExitExamBtn');
             manageExamListContainer = document.getElementById('manageExamListContainer');
-            // NEW: Class Management Elements
             createClassBtn = document.getElementById('createClassBtn');
             classesPage = document.getElementById('classesPage');
             manageClassesTableBody = document.getElementById('manageClassesTable').querySelector('tbody');
@@ -2507,8 +2540,8 @@
             assignExamModal = document.getElementById('assignExamModal');
             manageClassListContainer = document.getElementById('manageClassListContainer');
             showAllManageClassesBtn = document.getElementById('showAllManageClassesBtn');
-
-            // --- Initial Load ---
+            
+            // Check for saved user
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 state.currentUser = JSON.parse(savedUser);
@@ -2608,24 +2641,20 @@
             saveAndExitExamBtn.addEventListener('click', handleBackToDashboard); // NEW
 
             examOptionsContainer.addEventListener('click', (e) => {
-                if (state.isPreviewMode) return;
-                
                 const clickedOption = e.target.closest('.option');
                 if (!clickedOption) return;
+                if (state.isPreviewMode) return;
                 
                 const questionType = state.currentExam.questions[state.currentQuestionIndex].type || 'single';
                 
-                if(questionType === 'single') {
-                    // Radio button logic
+                if (questionType === 'single') {
                     examOptionsContainer.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
                     clickedOption.classList.add('selected');
                     clickedOption.querySelector('input[type="radio"]').checked = true;
                 } else if (questionType === 'multiple') {
-                    // Checkbox logic
+                    // MODIFIED: Toggle checkbox correctly
                     const checkbox = clickedOption.querySelector('input[type="checkbox"]');
-                    
-                    // MODIFIED: Toggle checkbox if user didn't click it directly
-                    if (e.target.tagName !== 'INPUT') {
+                    if (e.target !== checkbox) { // Only toggle if not clicking checkbox itself
                         checkbox.checked = !checkbox.checked;
                     }
                     clickedOption.classList.toggle('selected', checkbox.checked);
@@ -2637,25 +2666,18 @@
             
             // NEW: Question Type Toggle
             document.getElementById('questionTypeInput').addEventListener('change', (e) => {
-                toggleQuestionFields(e.target.value, 'add');
+                toggleQuestionFields('add', e.target.value);
             });
             document.getElementById('editQuestionTypeInput').addEventListener('change', (e) => {
-                toggleQuestionFields(e.target.value, 'edit');
+                toggleQuestionFields('edit', e.target.value);
             });
             
-            // NEW: Add Option Buttons
-            document.getElementById('add-option-btn-single').addEventListener('click', () => addOption('single', 'add'));
-            document.getElementById('add-option-btn-multiple').addEventListener('click', () => addOption('multiple', 'add'));
-            document.getElementById('edit-option-btn-single').addEventListener('click', () => addOption('single', 'edit'));
-            document.getElementById('edit-option-btn-multiple').addEventListener('click', () => addOption('multiple', 'edit'));
-            
-            // NEW: Remove Option Delegation
-            document.getElementById('add-options-single-list').addEventListener('click', (e) => removeOption(e, 'add-options-single-list'));
-            document.getElementById('add-options-multiple-list').addEventListener('click', (e) => removeOption(e, 'add-options-multiple-list'));
-            document.getElementById('edit-options-single-list').addEventListener('click', (e) => removeOption(e, 'edit-options-single-list'));
-            document.getElementById('edit-options-multiple-list').addEventListener('click', (e) => removeOption(e, 'edit-options-multiple-list'));
+            // NEW: Add/Remove Options
+            document.getElementById('add-option-btn-single').addEventListener('click', () => addOption('add-options-single-list', 'single'));
+            document.getElementById('add-option-btn-multiple').addEventListener('click', () => addOption('add-options-multiple-list', 'multiple'));
+            document.getElementById('edit-option-btn-single').addEventListener('click', () => addOption('edit-options-single-list', 'single'));
+            document.getElementById('edit-option-btn-multiple').addEventListener('click', () => addOption('edit-options-multiple-list', 'multiple'));
 
-            
             questionList.addEventListener('click', (e) => {
                 const editBtn = e.target.closest('.edit-question');
                 const deleteBtn = e.target.closest('.delete-question');
@@ -2676,12 +2698,15 @@
                 const card = e.target.closest('.stat-card.clickable');
                 if (!card) return;
                 
+                // NEW: Safety check
+                if (!state.currentUser) {
+                    console.log("User not loaded yet, ignoring card click.");
+                    return; 
+                }
+                
                 const page = card.dataset.page;
                 const filter = card.dataset.filter;
-                
-                // Safety check for user role
-                if (state.currentUser && state.currentUser.role === 'student' && (page === 'users' || page === 'exams')) return; 
-                
+                if (state.currentUser.role === 'student' && (page === 'users' || page === 'exams')) return; 
                 if (page === 'users') {
                     state.userFilter = filter || 'all';
                     updateTables(); 
@@ -2689,13 +2714,13 @@
                 handleNavClick(page);
             });
 
-            bulkJsonInput.addEventListener('change', handleBulkUpload);
-            // MODIFIED: Hook up new bulk upload button
+            // MODIFIED: Use separate button for bulk upload trigger
             bulkUploadBtn.addEventListener('click', () => {
                 performAdminAction(() => {
-                    bulkJsonInput.click();
+                    bulkJsonInput.click(); // Trigger the hidden file input
                 });
             });
+            bulkJsonInput.addEventListener('change', handleBulkUpload);
             downloadExamsBtn.addEventListener('click', exportExams);
 
             const resourceType = document.getElementById('resourceType');
@@ -2778,26 +2803,15 @@
                 } else {
                     showAllManageExamsBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all exams...`;
                 }
-                renderExamManagementTable(); // Redraw exam table
+                renderExamManagementTable(true); // Force redraw
             });
             
             // --- NEW: Class Management Listeners ---
             createClassBtn.addEventListener('click', openCreateClassModal);
-            classForm.addEventListener('click', handleClassFormSubmit);
+            classForm.addEventListener('submit', handleSaveClass);
             manageClassesTableBody.addEventListener('click', handleClassManagementClick);
-            
             document.getElementById('addStudentToClassBtn').addEventListener('click', handleAddStudentToClass);
-            document.getElementById('currentStudentList').addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-student-btn')) {
-                    const studentId = parseInt(e.target.dataset.id);
-                    const classId = parseInt(document.getElementById('manageStudentsClassId').value);
-                    state.db.removeStudentFromClass(classId, studentId);
-                    renderStudentList(classId); // Re-render list
-                    renderClassManagementTable(); // Update counts
-                }
-            });
             document.getElementById('assignExamToClassBtn').addEventListener('click', handleAssignExamToClass);
-            
             showAllManageClassesBtn.addEventListener('click', () => {
                 manageClassListContainer.classList.toggle('expanded');
                 showAllManageClassesBtn.classList.toggle('active');
@@ -2806,7 +2820,7 @@
                 } else {
                     showAllManageClassesBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all classes...`;
                 }
-                renderClassManagementTable(); // Redraw class table
+                renderClassManagementTable(true); // Force redraw
             });
         }
         
@@ -2851,8 +2865,6 @@
                 iconDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i>`;
             } else if (type === 'warning') {
                 iconDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i>`;
-            } else if (type === 'success') {
-                iconDiv.innerHTML = `<i class="fas fa-check-circle"></i>`;
             } else {
                  iconDiv.innerHTML = `<i class="fas fa-question-circle"></i>`;
             }
@@ -2902,7 +2914,7 @@
                 if(page === 'exams') renderExamManagementTable();
                 if(page === 'results') renderResultsTable();
                 if(page === 'users') updateTables(); // NEW: Refresh users table on nav
-                if(page === 'classes') renderClassManagementTable(); // NEW: Refresh classes
+                if(page === 'classes') renderClassManagementTable(); // NEW: Refresh classes table
             }
             navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === page));
         }
@@ -2916,7 +2928,7 @@
             switchPage('dashboard');
             navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === 'dashboard'));
             
-            // MODIFIED: Added check for currentUser
+            // MODIFIED: Added check
             if (state.currentUser) {
                 updateTables(); // Refresh dashboard tables
                 updateStats(); // Refresh stats
@@ -3055,41 +3067,39 @@
         }
 
         function handleBulkUpload(e) {
-            // No admin check here, already handled by button click
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const exams = JSON.parse(event.target.result);
-                    if(Array.isArray(exams)) {
-                        // MODIFIED: Pass current user
-                        state.db.bulkImportExams(exams, state.currentUser);
-                        showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
-                        renderExamManagementTable();
-                        updateTables(); // FIXED: Refresh dashboard tables too
-                        updateStats();
-                    } else { showToast("Invalid JSON format. Expected an array.", "error"); }
-                } catch(err) { 
-                    showToast("Error parsing JSON file.", "error"); 
-                    console.error("JSON Parse Error:", err); // Added for debugging
-                }
-            };
-            reader.readAsText(file);
-            e.target.value = ''; // Reset file input
+            // No need for admin check, already done by button click
+             const file = e.target.files[0];
+             if(!file) return;
+             const reader = new FileReader();
+             reader.onload = function(event) {
+                 try {
+                     const exams = JSON.parse(event.target.result);
+                     if(Array.isArray(exams)) {
+                         // MODIFIED: Pass current user
+                         state.db.bulkImportExams(exams, state.currentUser);
+                         showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
+                         renderExamManagementTable();
+                         updateTables(); // FIXED: Refresh dashboard tables too
+                         updateStats();
+                     } else { showToast("Invalid JSON format. Expected an array.", "error"); }
+                 } catch(err) { 
+                     showToast("Error parsing JSON file.", "error"); 
+                     console.error("JSON Parse Error:", err); // Added for debugging
+                 }
+             };
+             reader.readAsText(file);
+             e.target.value = '';
         }
 
         function exportExams() {
-            performAdminAction(() => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.db.exams));
-                const downloadAnchorNode = document.createElement('a');
-                downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", "exams_export.json");
-                document.body.appendChild(downloadAnchorNode); 
-                downloadAnchorNode.click();
-                downloadAnchorNode.remove();
-                showToast("Exams exported successfully.", "success");
-            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.db.exams));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "exams_export.json");
+            document.body.appendChild(downloadAnchorNode); 
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast("Exams exported successfully.", "success");
         }
 
         function handleAddResource(e) {
@@ -3117,23 +3127,23 @@
             showToast("Resource added successfully.", "success");
         }
 
-        function renderExamManagementTable() {
+        // MODIFIED: Added forceRedraw param
+        function renderExamManagementTable(forceRedraw = false) {
+            // NEW: Added check
+            if (state.currentPage !== 'exams' && !forceRedraw) return;
+            
+            const isExpanded = manageExamListContainer.classList.contains('expanded');
             manageExamsTableBody.innerHTML = '';
-            const isAdmin = state.currentUser.role === 'admin';
-            // document.getElementById('bulkUploadSection').classList.toggle('hidden', !isAdmin);
             
             const exams = state.db.exams;
-            // NEW: Check if list should be collapsed
-            const isExpanded = manageExamListContainer.classList.contains('expanded');
             const examsToShow = isExpanded ? exams : exams.slice(0, 3);
             
+            showAllManageExamsBtn.style.display = (exams.length > 3) ? 'flex' : 'none';
+
             if (exams.length === 0) {
                 manageExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="6"><i class="fas fa-file-excel"></i>No exams found.</td></tr>`;
-                showAllManageExamsBtn.style.display = 'none';
                 return;
             }
-            
-            showAllManageExamsBtn.style.display = (exams.length > 3) ? 'flex' : 'none';
 
             examsToShow.forEach(exam => {
                 let resourceButtons = '';
@@ -3158,8 +3168,7 @@
                     </div>
                 `;
                 
-                const subDisplay = exam.subject || "N/A";
-                const subjectDisplay = `<span class="desktop-text">${subDisplay}</span><span class="mobile-text">${subDisplay.substring(0,3)}</span>`;
+                const subjectDisplay = `<span class="desktop-text">${exam.subject}</span><span class="mobile-text">${exam.subject.substring(0,3)}</span>`;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -3184,25 +3193,29 @@
                 return;
             }
             
+            // NEW: Sort by active first, then date
+            results.sort((a, b) => {
+                if (a.status === 'active' && b.status !== 'active') return -1;
+                if (a.status !== 'active' && b.status === 'active') return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
+            
             results.forEach(r => {
                 const row = document.createElement('tr');
                 const percentage = Math.round((r.score / r.total) * 100);
                 
-                // NEW: Handle result status
-                const resultStatus = r.status || 'active';
-                const statusClass = resultStatus === 'active' ? 'status-approved' : 'status-retaken';
-                const statusText = resultStatus === 'active' ? 'Active' : 'Retaken';
-                if(resultStatus === 'retaken') {
+                // NEW: Handle retaken status
+                const isRetaken = r.status === 'retaken';
+                if (isRetaken) {
                     row.classList.add('retaken');
                 }
                 
-                // NEW: Updated action buttons
                 const actionButtons = isAdmin ? `
                     <div class="action-wrapper">
                         <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
                         <div class="action-buttons">
-                            ${resultStatus === 'active' ? `<button class="action-btn reset-result" data-id="${r.id}" title="Reset Attempt"><i class="fas fa-redo"></i> Reset Attempt</button>` : ''}
-                            <button class="action-btn delete-result" data-id="${r.id}" title="Delete Result"><i class="fas fa-trash"></i> Delete Result</button>
+                            ${!isRetaken ? `<button class="action-btn reset-result" data-id="${r.id}" title="Reset"><i class="fas fa-redo"></i> Reset Attempt</button>` : ''}
+                            <button class="action-btn delete-result" data-id="${r.id}" title="Delete"><i class="fas fa-trash"></i> Delete Result</button>
                         </div>
                     </div>
                 ` : '';
@@ -3212,7 +3225,7 @@
                     <td data-label="Exam">${r.examTitle}</td>
                     <td data-label="Score">${r.score} / ${r.total} (${percentage}%)</td>
                     <td data-label="Date">${r.date}</td>
-                    <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
+                    <td data-label="Status"><span class="status ${isRetaken ? 'status-retaken' : 'status-completed'}">${isRetaken ? 'Retaken' : 'Completed'}</span></td>
                     <td data-label="Actions" class="admin-action-cell">${actionButtons}</td>
                 `;
                 resultsTableBody.appendChild(row);
@@ -3227,10 +3240,10 @@
             if(btn.classList.contains('reset-result')) {
                 performAdminAction(() => {
                     const result = state.db.results.find(r=>r.id===id);
-                    showConfirmation("Reset Attempt?", `This will mark this attempt as "Retaken" and allow ${result.studentName} to take the exam again.`, () => {
+                    showConfirmation("Reset Attempt?", `Are you sure you want to mark this result for ${result.studentName} as 'retaken'? This will allow them to take the exam again.`, () => {
                         state.db.updateResultStatus(id, 'retaken');
                         renderResultsTable();
-                        showToast("Result status updated to 'Retaken'.", "success");
+                        showToast("Result marked for retake.", "success");
                     }, 'warning');
                 });
             } else if (btn.classList.contains('delete-result')) {
@@ -3301,7 +3314,8 @@
                 });
                 showToast('Registration successful! Please log in.', 'success');
                 registerForm.reset(); 
-                switchAuthTab('login'); // NEW: Switch to login tab
+                // MODIFIED: Switch to login tab
+                switchAuthTab('login');
             }, 500);
         }
 
@@ -3333,8 +3347,10 @@
                 document.body.classList.toggle('is-admin', isAdmin);
                 
                 // NEW: control visibility of buttons on exams page
-                // document.getElementById('addExamBtn').style.display = isAdmin ? 'flex' : 'none';
-                // document.getElementById('downloadExamsBtn').style.display = isAdmin ? 'flex' : 'none';
+                document.getElementById('addExamBtn').style.display = isAdmin ? 'flex' : 'none';
+                document.getElementById('downloadExamsBtn').style.display = isAdmin ? 'flex' : 'none';
+                // MODIFIED: Use classList
+                document.getElementById('bulkUploadSection').classList.toggle('admin-only', isAdmin);
                 
                 document.querySelector('.nav-link[data-page="users"]').style.display = isStudent ? 'none' : 'flex';
                 document.querySelector('.nav-link[data-page="exams"]').style.display = isStudent ? 'none' : 'flex';
@@ -3365,7 +3381,7 @@
             document.getElementById('totalTeachers').textContent = state.db.users.filter(u => u.role === 'teacher').length;
             document.getElementById('totalStudents').textContent = state.db.users.filter(u => u.role === 'student').length;
             document.getElementById('totalExams').textContent = state.db.exams.length;
-            document.getElementById('completedExams').textContent = state.db.results.length;
+            document.getElementById('completedExams').textContent = state.db.results.filter(r => r.status === 'active').length;
         }
 
         // MODIFIED: Added forceRedraw param
@@ -3418,8 +3434,7 @@
                      const row = document.createElement('tr');
                      const participantCount = state.db.results.filter(r => r.examId === exam.id).length;
                      
-                     const subDisplay = exam.subject || "N/A";
-                     const subjectDisplay = `<span class="desktop-text">${subDisplay}</span><span class="mobile-text">${subDisplay.substring(0,3)}</span>`;
+                     const subjectDisplay = `<span class="desktop-text">${exam.subject}</span><span class="mobile-text">${exam.subject.substring(0,3)}</span>`;
                      
                      row.innerHTML = `<td data-label="Title">${exam.title}</td><td data-label="Subject">${subjectDisplay}</td><td data-label="Questions">${exam.questions.length}</td><td data-label="Participants">${participantCount}</td><td style="min-width: 60px;" data-label="Actions" class="admin-action-cell"></td>`;
                      recentExamsTableBody.appendChild(row);
@@ -3523,7 +3538,7 @@
                 title: document.getElementById('examTitleInput').value,
                 subject: document.getElementById('examSubject').value,
                 scheduledDate: document.getElementById('examDate').value,
-                duration: parseInt(document.getElementById('examDurationInput').value) || 0,
+                duration: parseInt(document.getElementById('examDurationInput').value),
                 teacher: state.currentUser.name,
                 teacherId: state.currentUser.id, // NEW: Store teacher ID
                 status: state.currentUser.role === 'admin' ? 'approved' : 'pending',
@@ -3543,7 +3558,7 @@
             setTimeout(() => {
                 // MODIFIED: Trim whitespace from code
                 const examCode = joinExamCodeInput.value.trim();
-                console.log("Joining exam with code:", `'${examCode}'`); // DEBUG
+                console.log("Joining exam with code:", `'${examCode}'`); // DEBUGGING
                 const exam = state.db.findExamByCode(examCode);
                 setButtonLoading(button, false);
 
@@ -3595,7 +3610,7 @@
 
             loadQuestion(state.currentQuestionIndex); 
             if(!isPreview && exam.duration > 0) startTimer();
-            else document.getElementById('timeRemaining').textContent = isPreview ? "N/A (Preview)" : "Unlimited";
+            else document.getElementById('timeRemaining').textContent = isPreview ? "N/A (Preview)" : (exam.duration === 0 ? "Unlimited" : "60:00");
             
             switchPage('takeExam');
         }
@@ -3603,70 +3618,57 @@
         function loadQuestion(index) {
             if (!state.currentExam) return;
             const q = state.currentExam.questions[index];
+            // MODIFIED: Default to 'single' if type is missing
+            const questionType = q.type || 'single';
+            
             document.getElementById('questionText').textContent = q.question;
             document.getElementById('currentQuestion').textContent = index + 1;
-            examOptionsContainer.innerHTML = ''; // Clear old options
+            examOptionsContainer.innerHTML = '';
             
-            // NEW: Handle different question types
-            // MODIFIED: Default to 'single' if type is missing
-            const questionType = q.type || 'single'; 
-            
-            if (questionType === 'single') {
-                q.options.forEach((optionText, i) => {
-                    const div = document.createElement('div');
-                    div.className = 'option';
-                    div.dataset.index = i;
-                    div.innerHTML = `<input type="radio" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
-                    if (state.userAnswers[index] === i) {
-                        div.querySelector('input').checked = true;
-                        div.classList.add('selected');
+            // MODIFIED: Handle different question types
+            switch (questionType) {
+                case 'single':
+                    q.options.forEach((optionText, i) => {
+                        const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
+                        div.innerHTML = `<input type="radio" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
+                        examOptionsContainer.appendChild(div);
+                        if (state.userAnswers[index] === i) { div.querySelector('input').checked = true; div.classList.add('selected'); }
+                    });
+                    break;
+                case 'multiple':
+                    q.options.forEach((optionText, i) => {
+                        const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
+                        div.innerHTML = `<input type="checkbox" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
+                        examOptionsContainer.appendChild(div);
+                        const userAnswersForQ = state.userAnswers[index] || [];
+                        if (userAnswersForQ[i] === true) {
+                            div.querySelector('input').checked = true; div.classList.add('selected');
+                        }
+                    });
+                    break;
+                case 'truefalse':
+                    ['True', 'False'].forEach((optionText, i) => {
+                        const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
+                        const val = optionText.toLowerCase();
+                        div.innerHTML = `<input type="radio" name="answer" value="${val}" id="option${i}"><label for="option${i}">${optionText}</label>`;
+                        examOptionsContainer.appendChild(div);
+                        if (state.userAnswers[index] === val) { div.querySelector('input').checked = true; div.classList.add('selected'); }
+                    });
+                    break;
+                case 'fill':
+                    examOptionsContainer.innerHTML = `<div class="form-group"><label>Your Answer:</label><input type="text" class="form-control answer-input" id="fillAnswer"></div>`;
+                    if (state.userAnswers[index]) {
+                        document.getElementById('fillAnswer').value = state.userAnswers[index];
                     }
-                    examOptionsContainer.appendChild(div);
-                });
-            } else if (questionType === 'multiple') {
-                 q.options.forEach((optionText, i) => {
-                    const div = document.createElement('div');
-                    div.className = 'option';
-                    div.dataset.index = i;
-                    div.innerHTML = `<input type="checkbox" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
-                    // Check if answer is stored and is an array
-                    if (Array.isArray(state.userAnswers[index]) && state.userAnswers[index].includes(i)) {
-                        div.querySelector('input').checked = true;
-                        div.classList.add('selected');
+                    break;
+                case 'essay':
+                    examOptionsContainer.innerHTML = `<div class="form-group"><label>Your Answer:</label><textarea class="form-control answer-textarea" id="essayAnswer"></textarea></div>`;
+                    if (state.userAnswers[index]) {
+                        document.getElementById('essayAnswer').value = state.userAnswers[index];
                     }
-                    examOptionsContainer.appendChild(div);
-                });
-            } else if (questionType === 'truefalse') {
-                const options = ['True', 'False'];
-                options.forEach((optionText, i) => {
-                    const val = optionText.toLowerCase();
-                    const div = document.createElement('div');
-                    div.className = 'option';
-                    div.dataset.index = val;
-                    div.innerHTML = `<input type="radio" name="answer" value="${val}" id="option${i}"><label for="option${i}">${optionText}</label>`;
-                    if (state.userAnswers[index] === val) {
-                        div.querySelector('input').checked = true;
-                        div.classList.add('selected');
-                    }
-                    examOptionsContainer.appendChild(div);
-                });
-            } else if (questionType === 'fill') {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'form-control answer-input';
-                input.placeholder = 'Type your answer here...';
-                input.value = state.userAnswers[index] || '';
-                input.addEventListener('input', (e) => saveAnswer());
-                examOptionsContainer.appendChild(input);
-            } else if (questionType === 'essay') {
-                const textarea = document.createElement('textarea');
-                textarea.className = 'form-control answer-textarea';
-                textarea.placeholder = 'Type your essay answer here...';
-                textarea.value = state.userAnswers[index] || '';
-                textarea.addEventListener('input', (e) => saveAnswer());
-                examOptionsContainer.appendChild(textarea);
+                    break;
             }
-
+            
             prevQuestionBtn.disabled = index === 0;
             
             const isLast = index === state.currentExam.questions.length - 1;
@@ -3675,31 +3677,35 @@
         }
         
         function saveAnswer() {
-            if (state.isPreviewMode) return;
+            if(state.isPreviewMode) return;
             
-            const q = state.currentExam.questions[state.currentQuestionIndex];
-            const questionType = q.type || 'single';
+            const questionType = state.currentExam.questions[state.currentQuestionIndex].type || 'single';
             
-            if (questionType === 'single' || questionType === 'truefalse') {
-                const selected = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
-                if (selected) {
-                    // Store '0', '1', 'true', 'false'
-                    const val = isNaN(parseInt(selected.value)) ? selected.value : parseInt(selected.value);
-                    state.userAnswers[state.currentQuestionIndex] = val;
-                }
-            } else if (questionType === 'multiple') {
-                const selected = document.querySelectorAll('#examOptionsContainer input[type="checkbox"]:checked');
-                const answers = Array.from(selected).map(cb => parseInt(cb.value));
-                state.userAnswers[state.currentQuestionIndex] = answers;
-            } else if (questionType === 'fill') {
-                const input = document.querySelector('#examOptionsContainer .answer-input');
-                state.userAnswers[state.currentQuestionIndex] = input.value;
-            } else if (questionType === 'essay') {
-                const textarea = document.querySelector('#examOptionsContainer .answer-textarea');
-                state.userAnswers[state.currentQuestionIndex] = textarea.value;
+            switch (questionType) {
+                case 'single':
+                    const selectedRadio = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
+                    state.userAnswers[state.currentQuestionIndex] = selectedRadio ? parseInt(selectedRadio.value) : null;
+                    break;
+                case 'multiple':
+                    const selectedCheckboxes = document.querySelectorAll('#examOptionsContainer input[type="checkbox"]');
+                    const answers = [];
+                    selectedCheckboxes.forEach((cb, i) => {
+                        answers[i] = cb.checked;
+                    });
+                    state.userAnswers[state.currentQuestionIndex] = answers;
+                    break;
+                case 'truefalse':
+                    const selectedTF = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
+                    state.userAnswers[state.currentQuestionIndex] = selectedTF ? selectedTF.value : null;
+                    break;
+                case 'fill':
+                    state.userAnswers[state.currentQuestionIndex] = document.getElementById('fillAnswer').value;
+                    break;
+                case 'essay':
+                    state.userAnswers[state.currentQuestionIndex] = document.getElementById('essayAnswer').value;
+                    break;
             }
         }
-
 
         function handleNextQuestion() { saveAnswer(); if (state.currentQuestionIndex < state.currentExam.questions.length - 1) { state.currentQuestionIndex++; loadQuestion(state.currentQuestionIndex); }}
         function handlePrevQuestion() { saveAnswer(); if (state.currentQuestionIndex > 0) { state.currentQuestionIndex--; loadQuestion(state.currentQuestionIndex); }}
@@ -3719,21 +3725,6 @@
             }, 1000);
         }
 
-        // NEW: Helper function for checking multi-choice answers
-        function arraysEqual(a, b) {
-            if (a === b) return true;
-            if (a == null || b == null) return false;
-            if (a.length !== b.length) return false;
-            
-            const aSorted = [...a].sort();
-            const bSorted = [...b].sort();
-
-            for (let i = 0; i < aSorted.length; ++i) {
-                if (aSorted[i] !== bSorted[i]) return false;
-            }
-            return true;
-        }
-
         function handleSubmitExam() {
             saveAnswer(); 
             if (state.examTimer) clearInterval(state.examTimer);
@@ -3746,28 +3737,45 @@
             }
 
             let score = 0; 
+            // MODIFIED: New scoring logic
             state.userAnswers.forEach((answer, i) => {
                 const q = state.currentExam.questions[i];
-                const qType = q.type || 'single';
-                
-                // MODIFIED: Use type-insensitive comparison
-                const correctAnswer = q.correctAnswer;
-                
-                if (qType === 'single') {
-                    // answer is Number, correctAnswer might be String
-                    if (answer == correctAnswer) score++;
-                } else if (qType === 'multiple') {
-                    // answer is Array of Numbers, correctAnswer might be Array of Strings
-                    const formattedAnswer = Array.isArray(answer) ? answer.map(String) : [];
-                    if (arraysEqual(formattedAnswer, correctAnswer)) score++;
-                } else if (qType === 'truefalse') {
-                    // answer is String 'true'/'false', correctAnswer might be Boolean true/false or String 'true'/'false'
-                    if (String(answer) == String(correctAnswer)) score++;
-                } else if (qType === 'fill') {
-                    // answer is String, correctAnswer is String. Check case-insensitive
-                    if (answer && correctAnswer && answer.toLowerCase() === correctAnswer.toLowerCase()) score++;
+                const type = q.type || 'single';
+                // Use == to allow type coercion (e.g., 0 == "0")
+                const isCorrect = (valA, valB) => valA == valB;
+
+                switch (type) {
+                    case 'single':
+                        if (isCorrect(answer, q.correctAnswer)) score++;
+                        break;
+                    case 'multiple':
+                        let allCorrect = true;
+                        if (!answer || answer.length === 0) allCorrect = false;
+                        else {
+                            for(let j=0; j<q.options.length; j++) {
+                                // Answer is true/false, correct answer is index
+                                const userAnswered = answer[j] === true;
+                                const shouldBeAnswered = (q.correctAnswer || []).includes(j);
+                                if (userAnswered !== shouldBeAnswered) {
+                                    allCorrect = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (allCorrect) score++;
+                        break;
+                    case 'truefalse':
+                        if (isCorrect(answer, q.correctAnswer)) score++;
+                        break;
+                    case 'fill':
+                        if (answer && q.correctAnswer && answer.toLowerCase() === q.correctAnswer.toLowerCase()) {
+                            score++;
+                        }
+                        break;
+                    case 'essay':
+                        // Manual grade, do nothing
+                        break;
                 }
-                // 'essay' types are not graded, score = 0
             });
             
             state.db.saveResult({
@@ -3787,9 +3795,8 @@
         }
         
         function openExamEditor(examId) {
-            const exam = state.db.findExamById(examId); 
-            if (!exam) return;
-            console.log("Editing exam:", JSON.stringify(exam)); // DEBUG
+            const exam = state.db.findExamById(examId); if (!exam) return;
+            console.log("Editing exam:", JSON.stringify(exam)); // DEBUGGING
             state.editingExamId = examId; 
             examEditorTitle.textContent = `Edit Exam: ${exam.title}`;
             
@@ -3806,137 +3813,91 @@
             state.db.updateExam(state.editingExamId, {
                 title: document.getElementById('editExamTitleInput').value,
                 subject: document.getElementById('editExamSubjectInput').value,
-                duration: parseInt(document.getElementById('editExamDurationInput').value) || 0
+                duration: parseInt(document.getElementById('editExamDurationInput').value)
             });
             showToast("Exam details updated.", "success");
         }
 
-        // --- NEW: Helper function to set required status on form elements ---
-        function setRequired(elements, isRequired) {
-            // MODIFIED: Check if it's a single element
-            if (elements && !elements.forEach) {
-                elements = [elements]; // Wrap single element in an array
+        // --- NEW: Add/Remove Options ---
+        function addOption(listId, type, option = { text: '', correct: false }) {
+            const list = document.getElementById(listId);
+            const index = list.children.length;
+            const group = document.createElement('div');
+            group.className = 'option-input-group';
+            
+            if (type === 'single') {
+                group.innerHTML = `
+                    <input type="radio" name="${listId.startsWith('edit') ? 'editCorrectAnswer' : 'correctAnswer'}" value="${index}" ${option.correct ? 'checked' : ''} required>
+                    <input type="text" class="form-control" placeholder="Option ${index + 1}" value="${option.text}" required>
+                `;
+            } else if (type === 'multiple') {
+                 group.innerHTML = `
+                    <input type="checkbox" name="${listId.startsWith('edit') ? 'editCorrectAnswerMultiple' : 'correctAnswerMultiple'}" value="${index}" ${option.correct ? 'checked' : ''}>
+                    <input type="text" class="form-control" placeholder="Option ${index + 1}" value="${option.text}">
+                `;
             }
             
-            elements.forEach(el => {
-                if (isRequired) {
-                    el.setAttribute('required', 'true');
-                } else {
-                    el.removeAttribute('required');
-                }
-            });
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-remove-option';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.onclick = () => group.remove();
+            group.appendChild(removeBtn);
+            
+            list.appendChild(group);
         }
         
-        // --- NEW: Helper to toggle question fields ---
-        function toggleQuestionFields(type, prefix) {
-            // Get all field containers
-            const singleOptions = document.getElementById(`${prefix}-options-single`);
-            const multipleOptions = document.getElementById(`${prefix}-options-multiple`);
-            const trueFalseAnswer = document.getElementById(`${prefix}-answer-truefalse`);
-            const fillAnswer = document.getElementById(`${prefix}-answer-fill`);
-            const essayAnswer = document.getElementById(`${prefix}-answer-essay`);
+        // --- NEW: Toggle Question Form Fields ---
+        function setRequired(elements, isRequired) {
+            // MODIFIED: Handle single element or list
+            if (elements.forEach) {
+                elements.forEach(el => el.required = isRequired);
+            } else if (elements) {
+                elements.required = isRequired;
+            }
+        }
+        
+        function toggleQuestionFields(prefix, type) {
+            const form = prefix === 'add' ? addQuestionForm : editQuestionForm;
+            
+            const optionsSingle = form.querySelector(`#${prefix}-options-single`);
+            const optionsMultiple = form.querySelector(`#${prefix}-options-multiple`);
+            const answerTrueFalse = form.querySelector(`#${prefix}-answer-truefalse`);
+            const answerFill = form.querySelector(`#${prefix}-answer-fill`);
+            const answerEssay = form.querySelector(`#${prefix}-answer-essay`);
+            
+            const radioInputs = form.querySelectorAll(`input[name="${prefix === 'add' ? 'correctAnswer' : 'editCorrectAnswer'}"]`);
+            const radioTexts = form.querySelectorAll(`#${prefix}-options-single-list input[type="text"]`);
+            // MODIFIED: Corrected selector
+            const fillInput = form.querySelector(`#${prefix}AnswerFill`);
             
             // Hide all
-            [singleOptions, multipleOptions, trueFalseAnswer, fillAnswer, essayAnswer].forEach(el => el.classList.add('hidden'));
+            [optionsSingle, optionsMultiple, answerTrueFalse, answerFill, answerEssay].forEach(el => el.classList.add('hidden'));
             
-            // Remove 'required' from all inputs
-            setRequired(singleOptions.querySelectorAll('input'), false);
-            setRequired(multipleOptions.querySelectorAll('input[type="text"]'), false);
-            setRequired(fillAnswer.querySelector('input'), false);
+            // Remove all 'required'
+            setRequired(radioInputs, false);
+            setRequired(radioTexts, false);
+            setRequired(fillInput, false);
             
             // Show and set 'required' for the selected type
             if (type === 'single') {
-                singleOptions.classList.remove('hidden');
-                setRequired(singleOptions.querySelectorAll('input'), true);
+                optionsSingle.classList.remove('hidden');
+                setRequired(radioInputs, true);
+                setRequired(radioTexts, true);
             } else if (type === 'multiple') {
-                multipleOptions.classList.remove('hidden');
-                // Note: Checkboxes aren't 'required', but the text fields are
-                setRequired(multipleOptions.querySelectorAll('input[type="text"]'), true);
+                optionsMultiple.classList.remove('hidden');
+                // No fields are strictly required for multiple choice
             } else if (type === 'truefalse') {
-                trueFalseAnswer.classList.remove('hidden');
+                answerTrueFalse.classList.remove('hidden');
             } else if (type === 'fill') {
-                fillAnswer.classList.remove('hidden');
-                setRequired(fillAnswer.querySelector('input'), true);
+                answerFill.classList.remove('hidden');
+                setRequired(fillInput, true);
             } else if (type === 'essay') {
-                essayAnswer.classList.remove('hidden');
+                answerEssay.classList.remove('hidden');
             }
         }
 
-        // --- NEW: Helper to add a new option field ---
-        function addOption(type, prefix) {
-            const listId = `${prefix}-options-${type}-list`;
-            const list = document.getElementById(listId);
-            const newIndex = list.children.length;
-            
-            const inputType = (type === 'single') ? 'radio' : 'checkbox';
-            const inputName = (type === 'single') ? 'correctAnswer' : 'correctAnswerMultiple';
-            
-            const div = document.createElement('div');
-            div.className = 'option-input-group';
-            div.innerHTML = `
-                <input type="${inputType}" name="${inputName}" value="${newIndex}" ${type === 'single' ? 'required' : ''}>
-                <input type="text" class="form-control" placeholder="Option ${newIndex + 1}" required>
-                <button type="button" class="btn-icon danger btn-remove-option" title="Remove Option"><i class="fas fa-trash"></i></button>
-            `;
-            list.appendChild(div);
-        }
-        
-        // --- NEW: Helper to remove an option field ---
-        function removeOption(e, listId) {
-            const removeBtn = e.target.closest('.btn-remove-option');
-            if (!removeBtn) return;
-            
-            const itemToRemove = removeBtn.closest('.option-input-group');
-            const list = document.getElementById(listId);
-            
-            // Don't allow removing the last two options
-            if (list.children.length <= 2) {
-                showToast("You must have at least two options.", "error");
-                return;
-            }
-            
-            itemToRemove.remove();
-            
-            // Re-index remaining options
-            const items = list.querySelectorAll('.option-input-group');
-            items.forEach((item, index) => {
-                item.querySelector('input[type="radio"], input[type="checkbox"]').value = index;
-                item.querySelector('input[type="text"]').placeholder = `Option ${index + 1}`;
-            });
-        }
-        
-        // --- NEW: Get Question Data from Form ---
-        function getQuestionDataFromForm(form, type) {
-            const q = { type: type };
-            q.question = form.querySelector('textarea').value;
-            
-            if (type === 'single') {
-                const optionsList = form.querySelector('#add-options-single-list');
-                q.options = Array.from(optionsList.querySelectorAll('input[type="text"]')).map(input => input.value);
-                const correct = optionsList.querySelector('input[type="radio"]:checked');
-                q.correctAnswer = correct ? parseInt(correct.value) : null;
-                if (q.correctAnswer === null) throw new Error("Please select a correct answer.");
-            } else if (type === 'multiple') {
-                const optionsList = form.querySelector('#add-options-multiple-list');
-                q.options = Array.from(optionsList.querySelectorAll('input[type="text"]')).map(input => input.value);
-                const correct = optionsList.querySelectorAll('input[type="checkbox"]:checked');
-                q.correctAnswer = Array.from(correct).map(cb => cb.value); // Store as array of strings
-                if (q.correctAnswer.length === 0) throw new Error("Please select at least one correct answer.");
-            } else if (type === 'truefalse') {
-                q.options = ['True', 'False'];
-                // MODIFIED: Fix typo, was addAnswerTruefalse
-                q.correctAnswer = form.querySelector('#addAnswerTrueFalse').value; // 'true' or 'false'
-            } else if (type === 'fill') {
-                q.options = [];
-                q.correctAnswer = form.querySelector('#addAnswerFill').value;
-                if (!q.correctAnswer) throw new Error("Please provide a correct answer.");
-            } else if (type === 'essay') {
-                q.options = [];
-                q.correctAnswer = null; // Manually graded
-            }
-            return q;
-        }
-
+        // --- NEW: Render Question List (Updated) ---
         function renderQuestionList() {
             const exam = state.db.findExamById(state.editingExamId); if (!exam) return;
             questionList.innerHTML = ''; 
@@ -3949,35 +3910,32 @@
             questionList.classList.remove('empty-list');
 
             exam.questions.forEach((q, index) => {
-                const li = document.createElement('li'); 
-                li.className = 'question-list-item';
-                
+                const li = document.createElement('li'); li.className = 'question-list-item';
                 let answerHtml = '';
-                const qType = q.type || 'single'; // Default old questions
                 
-                if (qType === 'single' || qType === 'multiple') {
-                    const optionsHtml = q.options.map((opt, i) => {
-                        let isCorrect = false;
-                        if (qType === 'single') {
-                            isCorrect = (i == q.correctAnswer);
-                        } else if (qType === 'multiple') {
-                            // Check if index (as string) is in the array of correct answers
-                            isCorrect = (q.correctAnswer.includes(String(i)));
-                        }
-                        return `<li class="${isCorrect ? 'correct' : ''}">${i+1}. ${opt}</li>`;
-                    }).join('');
-                    answerHtml = `<ul class="question-list-item-options">${optionsHtml}</ul>`;
-                } else if (qType === 'truefalse') {
-                    answerHtml = `<div class="question-list-item-answer">Correct Answer: ${q.correctAnswer}</div>`;
-                } else if (qType === 'fill') {
-                     answerHtml = `<div class="question-list-item-answer">Correct Answer: "${q.correctAnswer}"</div>`;
-                } else if (qType === 'essay') {
-                    answerHtml = `<div class="question-list-item-answer"><i>Manually Graded</i></div>`;
+                switch (q.type) {
+                    case 'single':
+                        answerHtml = `<ul class="question-list-item-options">${q.options.map((opt, i) => `<li class="${i == q.correctAnswer ? 'correct' : ''}">${i+1}. ${opt}</li>`).join('')}</ul>`;
+                        break;
+                    case 'multiple':
+                        answerHtml = `<ul class="question-list-item-options">${q.options.map((opt, i) => `<li class="${(q.correctAnswer || []).includes(i) ? 'correct' : ''}">${i+1}. ${opt}</li>`).join('')}</ul>`;
+                        break;
+                    case 'truefalse':
+                        answerHtml = `<div class="question-list-item-answer">Correct Answer: ${q.correctAnswer}</div>`;
+                        break;
+                    case 'fill':
+                        answerHtml = `<div class="question-list-item-answer">Correct Answer: ${q.correctAnswer}</div>`;
+                        break;
+                    case 'essay':
+                        answerHtml = `<div class="question-list-item-answer">Essay (Manual Grade)</div>`;
+                        break;
+                    default: // Fallback for old questions
+                         answerHtml = `<ul class="question-list-item-options">${q.options.map((opt, i) => `<li class="${i == q.correctAnswer ? 'correct' : ''}">${i+1}. ${opt}</li>`).join('')}</ul>`;
                 }
-
+                
                 li.innerHTML = `
                     <div class="question-list-item-header">
-                        <h4>${index + 1}. ${q.question}</h4>
+                        <h4>${index + 1}. ${q.question} <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(${q.type || 'single'})</span></h4>
                         <div>
                             <button class="btn-icon edit-question" data-index="${index}"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon danger delete-question" data-index="${index}"><i class="fas fa-trash"></i></button>
@@ -3989,19 +3947,49 @@
             });
         }
         
+        // --- NEW: Handle Add Question (Updated) ---
         function handleAddQuestion(e) {
             e.preventDefault();
             const type = document.getElementById('questionTypeInput').value;
-            try {
-                const q = getQuestionDataFromForm(addQuestionForm, type);
-                state.db.addQuestionToExam(state.editingExamId, q); 
-                renderQuestionList(); 
-                addQuestionForm.reset();
-                toggleQuestionFields('single', 'add'); // Reset form to default
-                showToast("Question added.", "success");
-            } catch (err) {
-                showToast(err.message, "error");
+            const q = {
+                type: type,
+                question: document.getElementById('questionTextInput').value,
+                options: [],
+                correctAnswer: null
+            };
+            
+            if (type === 'single') {
+                const optionsList = document.getElementById('add-options-single-list');
+                const correctInput = addQuestionForm.querySelector('input[name="correctAnswer"]:checked');
+                if (!correctInput) {
+                    showToast("Please select a correct answer.", "error"); return;
+                }
+                q.correctAnswer = parseInt(correctInput.value);
+                optionsList.querySelectorAll('input[type="text"]').forEach(input => q.options.push(input.value));
+                
+            } else if (type === 'multiple') {
+                const optionsList = document.getElementById('add-options-multiple-list');
+                q.correctAnswer = [];
+                optionsList.querySelectorAll('.option-input-group').forEach((group, i) => {
+                    q.options.push(group.querySelector('input[type="text"]').value);
+                    if (group.querySelector('input[type="checkbox"]').checked) {
+                        q.correctAnswer.push(i);
+                    }
+                });
+                
+            } else if (type === 'truefalse') {
+                q.correctAnswer = document.getElementById('addAnswerTrueFalse').value;
+            } else if (type === 'fill') {
+                q.correctAnswer = document.getElementById('addAnswerFill').value;
+            } else if (type === 'essay') {
+                q.correctAnswer = null; // Manual grade
             }
+            
+            state.db.addQuestionToExam(state.editingExamId, q); 
+            renderQuestionList(); 
+            addQuestionForm.reset();
+            toggleQuestionFields('add', 'single'); // Reset form to default
+            showToast("Question added.", "success");
         }
         
         function handleDeleteQuestion(examId, qIndex) { 
@@ -4012,107 +4000,94 @@
              });
         }
         
+        // --- NEW: Open Edit Question Modal (Updated) ---
         function openEditQuestionModal(examId, qIndex) {
             const q = state.db.findExamById(examId).questions[qIndex]; if (!q) return;
             state.editingQuestionIndex = qIndex;
+            const type = q.type || 'single';
             
-            const qType = q.type || 'single';
-            document.getElementById('editQuestionTypeInput').value = qType;
-            toggleQuestionFields(qType, 'edit'); // Show correct fields
+            document.getElementById('editQuestionTypeInput').value = type;
+            toggleQuestionFields('edit', type);
             
             document.getElementById('editQuestionTextInput').value = q.question;
             
-            if (qType === 'single') {
+            if (type === 'single') {
                 const list = document.getElementById('edit-options-single-list');
-                list.innerHTML = ''; // Clear old options
-                q.options.forEach((opt, i) => {
-                    const div = document.createElement('div');
-                    div.className = 'option-input-group';
-                    div.innerHTML = `
-                        <input type="radio" name="editCorrectAnswer" value="${i}" ${i == q.correctAnswer ? 'checked' : ''} required>
-                        <input type="text" class="form-control" value="${opt}" required>
-                        <button type="button" class="btn-icon danger btn-remove-option" title="Remove Option"><i class="fas fa-trash"></i></button>
-                    `;
-                    list.appendChild(div);
-                });
-            } else if (qType === 'multiple') {
+                list.innerHTML = '';
+                q.options.forEach((opt, i) => addOption('edit-options-single-list', 'single', { text: opt, correct: i == q.correctAnswer }));
+            } else if (type === 'multiple') {
                 const list = document.getElementById('edit-options-multiple-list');
-                list.innerHTML = ''; // Clear old options
-                q.options.forEach((opt, i) => {
-                    const isChecked = q.correctAnswer.includes(String(i));
-                    const div = document.createElement('div');
-                    div.className = 'option-input-group';
-                    div.innerHTML = `
-                        <input type="checkbox" name="editCorrectAnswerMultiple" value="${i}" ${isChecked ? 'checked' : ''}>
-                        <input type="text" class="form-control" value="${opt}" required>
-                        <button type="button" class="btn-icon danger btn-remove-option" title="Remove Option"><i class="fas fa-trash"></i></button>
-                    `;
-                    list.appendChild(div);
-                });
-            } else if (qType === 'truefalse') {
-                document.getElementById('editAnswerTrueFalse').value = String(q.correctAnswer);
-            } else if (qType === 'fill') {
+                list.innerHTML = '';
+                q.options.forEach((opt, i) => addOption('edit-options-multiple-list', 'multiple', { text: opt, correct: (q.correctAnswer || []).includes(i) }));
+            } else if (type === 'truefalse') {
+                document.getElementById('editAnswerTrueFalse').value = q.correctAnswer;
+            } else if (type === 'fill') {
                 document.getElementById('editAnswerFill').value = q.correctAnswer;
             }
             
             editQuestionModal.style.display = 'flex';
         }
         
+        // --- NEW: Handle Update Question (Updated) ---
         function handleUpdateQuestion(e) {
             e.preventDefault();
             const type = document.getElementById('editQuestionTypeInput').value;
-            try {
-                const q = { type: type };
-                q.question = document.getElementById('editQuestionTextInput').value;
+            const q = {
+                type: type,
+                question: document.getElementById('editQuestionTextInput').value,
+                options: [],
+                correctAnswer: null
+            };
 
-                if (type === 'single') {
-                    const optionsList = document.getElementById('edit-options-single-list');
-                    q.options = Array.from(optionsList.querySelectorAll('input[type="text"]')).map(input => input.value);
-                    const correct = optionsList.querySelector('input[type="radio"]:checked');
-                    q.correctAnswer = correct ? parseInt(correct.value) : null;
-                    if (q.correctAnswer === null) throw new Error("Please select a correct answer.");
-                } else if (type === 'multiple') {
-                    const optionsList = document.getElementById('edit-options-multiple-list');
-                    q.options = Array.from(optionsList.querySelectorAll('input[type="text"]')).map(input => input.value);
-                    const correct = optionsList.querySelectorAll('input[type="checkbox"]:checked');
-                    q.correctAnswer = Array.from(correct).map(cb => cb.value); // Store as array of strings
-                    if (q.correctAnswer.length === 0) throw new Error("Please select at least one correct answer.");
-                } else if (type === 'truefalse') {
-                    q.options = ['True', 'False'];
-                    q.correctAnswer = document.getElementById('editAnswerTrueFalse').value;
-                } else if (type === 'fill') {
-                    q.options = [];
-                    q.correctAnswer = document.getElementById('editAnswerFill').value;
-                    if (!q.correctAnswer) throw new Error("Please provide a correct answer.");
-                } else if (type === 'essay') {
-                    q.options = [];
-                    q.correctAnswer = null;
+            if (type === 'single') {
+                const optionsList = document.getElementById('edit-options-single-list');
+                const correctInput = editQuestionForm.querySelector('input[name="editCorrectAnswer"]:checked');
+                if (!correctInput) {
+                    showToast("Please select a correct answer.", "error"); return;
                 }
+                q.correctAnswer = parseInt(correctInput.value);
+                optionsList.querySelectorAll('input[type="text"]').forEach(input => q.options.push(input.value));
                 
-                state.db.updateQuestionInExam(state.editingExamId, state.editingQuestionIndex, q);
-                renderQuestionList(); 
-                editQuestionModal.style.display = 'none';
-                showToast("Question updated.", "success");
-            } catch (err) {
-                showToast(err.message, "error");
+            } else if (type === 'multiple') {
+                const optionsList = document.getElementById('edit-options-multiple-list');
+                q.correctAnswer = [];
+                optionsList.querySelectorAll('.option-input-group').forEach((group, i) => {
+                    q.options.push(group.querySelector('input[type="text"]').value);
+                    if (group.querySelector('input[type="checkbox"]').checked) {
+                        q.correctAnswer.push(i);
+                    }
+                });
+                
+            } else if (type === 'truefalse') {
+                q.correctAnswer = document.getElementById('editAnswerTrueFalse').value;
+            } else if (type === 'fill') {
+                q.correctAnswer = document.getElementById('editAnswerFill').value;
+            } else if (type === 'essay') {
+                q.correctAnswer = null; // Manual grade
             }
+            
+            state.db.updateQuestionInExam(state.editingExamId, state.editingQuestionIndex, q);
+            renderQuestionList(); 
+            editQuestionModal.style.display = 'none';
+            showToast("Question updated.", "success");
         }
         
         // --- NEW: Class Management Functions ---
-        function renderClassManagementTable() {
-            manageClassesTableBody.innerHTML = '';
-            const classes = state.db.getClasses();
+        function renderClassManagementTable(forceRedraw = false) {
+            if (state.currentPage !== 'classes' && !forceRedraw) return;
             
             const isExpanded = manageClassListContainer.classList.contains('expanded');
+            manageClassesTableBody.innerHTML = '';
+            
+            const classes = state.db.getClasses();
             const classesToShow = isExpanded ? classes : classes.slice(0, 3);
             
+            showAllManageClassesBtn.style.display = (classes.length > 3) ? 'flex' : 'none';
+
             if (classes.length === 0) {
-                manageClassesTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-school"></i>No classes found.</td></tr>`;
-                showAllManageClassesBtn.style.display = 'none';
+                manageClassesTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-chalkboard"></i>No classes created.</td></tr>`;
                 return;
             }
-            
-            showAllManageClassesBtn.style.display = (classes.length > 3) ? 'flex' : 'none';
 
             classesToShow.forEach(cls => {
                 const row = document.createElement('tr');
@@ -4120,8 +4095,8 @@
                     <div class="action-wrapper">
                         <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
                         <div class="action-buttons">
-                            <button class="action-btn manage-students" data-id="${cls.id}"><i class="fas fa-users-cog"></i> Manage Students</button>
-                            <button class="action-btn assign-exam" data-id="${cls.id}"><i class="fas fa-file-signature"></i> Assign Exam</button>
+                            <button class="action-btn manage-students" data-id="${cls.id}"><i class="fas fa-users"></i> Manage Students</button>
+                            <button class="action-btn assign-exam" data-id="${cls.id}"><i class="fas fa-file-alt"></i> Assign Exam</button>
                             <button class="action-btn edit-class" data-id="${cls.id}"><i class="fas fa-edit"></i> Edit Class</button>
                             <button class="action-btn delete-class" data-id="${cls.id}"><i class="fas fa-trash"></i> Delete Class</button>
                         </div>
@@ -4130,7 +4105,7 @@
                 
                 row.innerHTML = `
                     <td data-label="Class Name">${cls.name}</td>
-                    <td data-label="Teacher">${cls.teacherName || 'N/A'}</td>
+                    <td data-label="Teacher">${cls.teacherName}</td>
                     <td data-label="Students">${cls.students.length}</td>
                     <td data-label="Exams">${cls.exams.length}</td>
                     <td data-label="Actions" class="admin-action-cell">${actionButtons}</td>
@@ -4141,76 +4116,68 @@
         
         function handleClassManagementClick(e) {
             const btn = e.target.closest('button');
-            if (!btn || btn.classList.contains('mobile-menu-trigger')) return;
+            if(!btn || btn.classList.contains('mobile-menu-trigger')) return;
             
             const classId = parseInt(btn.dataset.id);
             
-            if (btn.classList.contains('manage-students')) {
-                openManageStudentsModal(classId);
-            } else if (btn.classList.contains('assign-exam')) {
-                openAssignExamModal(classId);
-            } else if (btn.classList.contains('edit-class')) {
+            if (btn.classList.contains('edit-class')) {
                 openCreateClassModal(classId); // Reuse modal for editing
             } else if (btn.classList.contains('delete-class')) {
-                const cls = state.db.findClassById(classId);
-                showConfirmation("Delete Class?", `Are you sure you want to delete the class "${cls.name}"? This cannot be undone.`, () => {
+                showConfirmation("Delete Class?", "Are you sure you want to delete this class? This cannot be undone.", () => {
                     state.db.deleteClass(classId);
                     renderClassManagementTable();
                     showToast("Class deleted.", "success");
                 });
+            } else if (btn.classList.contains('manage-students')) {
+                openManageStudentsModal(classId);
+            } else if (btn.classList.contains('assign-exam')) {
+                openAssignExamModal(classId);
             }
         }
-        
-        function openCreateClassModal(e) {
-            // MODIFIED: Check if 'e' is a click event or an ID
-            const classId = (typeof e === 'number') ? e : null;
-            
+
+        function openCreateClassModal(classId = null) {
             classForm.reset();
-            const teacherSelect = document.getElementById('classTeacherInput');
-            teacherSelect.innerHTML = '<option value="">Select a Teacher</option>';
-            state.db.users.filter(u => u.role === 'teacher').forEach(t => {
-                teacherSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
-            });
+            const title = document.getElementById('classModalTitle');
+            const classIdInput = document.getElementById('classModalId');
+            const nameInput = document.getElementById('classNameInput');
+            const teacherInput = document.getElementById('classTeacherInput');
             
             if (classId) {
                 // Edit Mode
                 const cls = state.db.findClassById(classId);
                 if (!cls) return;
+                title.textContent = "Edit Class";
+                classIdInput.value = cls.id;
+                nameInput.value = cls.name;
+                teacherInput.value = cls.teacherName;
                 state.editingClassId = classId;
-                document.getElementById('classModalTitle').textContent = "Edit Class";
-                document.getElementById('classModalId').value = classId;
-                document.getElementById('classNameInput').value = cls.name;
-                document.getElementById('classTeacherInput').value = cls.teacherId;
             } else {
                 // Create Mode
+                title.textContent = "Create New Class";
+                classIdInput.value = '';
+                teacherInput.value = ''; // MODIFIED: Clear text input
                 state.editingClassId = null;
-                document.getElementById('classModalTitle').textContent = "Create New Class";
-                document.getElementById('classModalId').value = "";
             }
+            
             classModal.style.display = 'flex';
         }
         
-        function handleClassFormSubmit(e) {
+        function handleSaveClass(e) {
             e.preventDefault();
-            if (e.target.tagName !== 'FORM') return; // Ensure it's the form submit
-            
-            const classId = state.editingClassId;
-            const teacherId = parseInt(document.getElementById('classTeacherInput').value);
-            const teacher = state.db.findUserById(teacherId);
             const classData = {
                 name: document.getElementById('classNameInput').value,
-                teacherId: teacherId,
-                teacherName: teacher ? teacher.name : "N/A"
+                teacherName: document.getElementById('classTeacherInput').value,
+                teacherId: null // In a real app, you'd link this
             };
             
-            if (classId) {
+            if (state.editingClassId) {
                 // Update
-                state.db.updateClass(classId, classData);
-                showToast("Class updated successfully.", "success");
+                state.db.updateClass(state.editingClassId, classData);
+                showToast("Class updated!", "success");
             } else {
                 // Create
                 state.db.createClass(classData);
-                showToast("Class created successfully.", "success");
+                showToast("Class created!", "success");
             }
             
             classModal.style.display = 'none';
@@ -4224,42 +4191,41 @@
             document.getElementById('manageStudentsClassId').value = classId;
             document.getElementById('manageStudentsTitle').textContent = `Manage Students: ${cls.name}`;
             
-            renderStudentList(classId);
+            // Populate current roster
+            const rosterList = document.getElementById('currentStudentList');
+            rosterList.innerHTML = '';
+            if (cls.students.length === 0) {
+                rosterList.innerHTML = '<li class="student-list-item empty">No students in this class.</li>';
+            } else {
+                cls.students.forEach(studentId => {
+                    const student = state.db.findUserById(studentId);
+                    if (student) {
+                        const li = document.createElement('li');
+                        li.className = 'student-list-item';
+                        li.innerHTML = `
+                            <span>${student.name}</span>
+                            <button class="btn-icon danger remove-student" data-id="${student.id}"><i class="fas fa-times"></i></button>
+                        `;
+                        li.querySelector('.remove-student').onclick = () => {
+                            state.db.removeStudentFromClass(classId, studentId);
+                            openManageStudentsModal(classId); // Refresh modal
+                            renderClassManagementTable(); // Update count on main page
+                        };
+                        rosterList.appendChild(li);
+                    }
+                });
+            }
             
-            // Populate "Add Student" dropdown
+            // Populate student dropdown (all students not already in class)
             const addStudentSelect = document.getElementById('addStudentSelect');
             addStudentSelect.innerHTML = '<option value="">Select a Student...</option>';
             state.db.users
                 .filter(u => u.role === 'student' && !cls.students.includes(u.id))
-                .forEach(s => {
-                    addStudentSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                .forEach(student => {
+                    addStudentSelect.innerHTML += `<option value="${student.id}">${student.name}</option>`;
                 });
             
             manageStudentsModal.style.display = 'flex';
-        }
-        
-        function renderStudentList(classId) {
-            const cls = state.db.findClassById(classId);
-            const studentList = document.getElementById('currentStudentList');
-            studentList.innerHTML = '';
-            
-            if (cls.students.length === 0) {
-                studentList.innerHTML = '<li class="student-list-item empty">No students in this class.</li>';
-                return;
-            }
-            
-            cls.students.forEach(studentId => {
-                const student = state.db.findUserById(studentId);
-                if (student) {
-                    const li = document.createElement('li');
-                    li.className = 'student-list-item';
-                    li.innerHTML = `
-                        <span>${student.name}</span>
-                        <button class="btn-icon danger remove-student-btn" data-id="${student.id}" title="Remove Student"><i class="fas fa-times"></i></button>
-                    `;
-                    studentList.appendChild(li);
-                }
-            });
         }
         
         function handleAddStudentToClass() {
@@ -4267,13 +4233,13 @@
             const studentId = parseInt(document.getElementById('addStudentSelect').value);
             
             if (!studentId) {
-                showToast("Please select a student to add.", "error");
+                showToast("Please select a student.", "error");
                 return;
             }
             
             state.db.addStudentToClass(classId, studentId);
-            openManageStudentsModal(classId); // Re-open/refresh modal
-            renderClassManagementTable(); // Update counts
+            openManageStudentsModal(classId); // Refresh modal
+            renderClassManagementTable(); // Update count on main page
         }
         
         function openAssignExamModal(classId) {
@@ -4285,10 +4251,11 @@
             
             const assignExamSelect = document.getElementById('assignExamSelect');
             assignExamSelect.innerHTML = '<option value="">Select an Approved Exam...</option>';
+            
             state.db.exams
-                .filter(e => e.status === 'approved' && !cls.exams.includes(e.id))
-                .forEach(e => {
-                    assignExamSelect.innerHTML += `<option value="${e.id}">${e.title}</option>`;
+                .filter(ex => ex.status === 'approved' && !cls.exams.includes(ex.id))
+                .forEach(exam => {
+                    assignExamSelect.innerHTML += `<option value="${exam.id}">${exam.title}</option>`;
                 });
             
             assignExamModal.style.display = 'flex';
@@ -4299,26 +4266,23 @@
             const examId = parseInt(document.getElementById('assignExamSelect').value);
             
             if (!examId) {
-                showToast("Please select an exam to assign.", "error");
+                showToast("Please select an exam.", "error");
                 return;
             }
             
             state.db.assignExamToClass(classId, examId);
             assignExamModal.style.display = 'none';
-            renderClassManagementTable(); // Update counts
-            showToast("Exam assigned to class.", "success");
+            renderClassManagementTable(); // Update exam count
+            showToast("Exam assigned to class!", "success");
         }
 
 
-        // --- Start the app ---
-        // MODIFIED: Use a more robust DOM ready check
-        (function() {
-            if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
-                init();
-            } else {
-                document.addEventListener('DOMContentLoaded', init);
-            }
-        })();
+        // MODIFIED: More reliable startup
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init(); // Already loaded
+        }
     </script>
 </body>
 </html>
