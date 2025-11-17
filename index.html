@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Star-APP</title>
+    <title>AWA</title>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -465,7 +465,7 @@
             border-bottom: 1px solid #eee;
         }
         
-        /* NEW: Container for header buttons */
+        /* NEW: Class header button group */
         .content-header-actions {
             display: flex;
             gap: 10px;
@@ -555,7 +555,7 @@
         /* MODIFIED: Added expanded state to stop clipping */
         .table-container.scrollable-list.expanded {
             max-height: none;
-            /* MODIFIED: Keep visible */
+            /* MODIFIED: Set to visible */
             overflow-y: visible;
         }
         .table-container.scrollable-list table {
@@ -683,16 +683,17 @@
         .exam-info {
             display: flex;
             justify-content: space-between;
-            align-items: center; /* NEW: Align items */
             margin-bottom: 20px;
+            /* NEW: Added for timer */
+            align-items: center;
         }
         
-        /* NEW: Fancy timer box */
-        .timer-box {
+        /* NEW: Fancy timer style */
+        #timeRemaining {
             background: #e3f2fd;
             color: var(--primary);
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 5px 12px;
+            border-radius: 6px;
             font-weight: 600;
             font-size: 0.9rem;
         }
@@ -1233,13 +1234,10 @@
             .content-header h2 {
                 font-size: 1.3rem; 
             }
-            /* MODIFIED: Target child buttons */
-            .content-header > .btn-sm,
-            .content-header > .content-header-actions {
-                width: 100%; 
-            }
-            .content-header > .content-header-actions > .btn-sm {
-                flex-grow: 1; /* Make buttons share width */
+            /* MODIFIED: Button group on mobile */
+            .content-header .content-header-actions {
+                flex-direction: column;
+                width: 100%;
             }
 
             .stats-container { 
@@ -1548,8 +1546,7 @@
                                 <p>Duration: <span id="examDuration">60</span> minutes</p>
                             </div>
                             <div class="exam-info">
-                                <!-- MODIFIED: Added timer-box class -->
-                                <div class="timer-box">Time Remaining: <span id="timeRemaining">60:00</span></div>
+                                <div>Time Remaining: <span id="timeRemaining">60:00</span></div>
                                 <div>Question: <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span></div>
                             </div>
                             <div class="question-card" id="questionContainer">
@@ -1694,9 +1691,7 @@
                     <div id="usersPage" class="page-content hidden">
                          <div class="content-header">
                              <h2 id="usersPageTitle">User Management</h2>
-                             <div class="content-header-actions">
-                                <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
-                             </div>
+                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
                          </div>
                          <!-- MODIFIED: Added scrollable-list class -->
                          <div class="table-container scrollable-list" id="manageUserListContainer">
@@ -1723,9 +1718,7 @@
                     <div id="examsPage" class="page-content hidden">
                          <div class="content-header">
                              <h2>Exam Management</h2>
-                             <div class="content-header-actions">
-                                <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
-                             </div>
+                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
                          </div>
                          
                          <!-- MODIFIED: Centered, stacked, and equal-width buttons -->
@@ -1770,9 +1763,9 @@
                     <div id="classesPage" class="page-content hidden">
                          <div class="content-header">
                              <h2>Class Management</h2>
-                             <!-- MODIFIED: Moved buttons to top -->
-                             <div class="content-header-actions">
-                                <button class="btn btn-sm admin-only" id="createClassBtn"><i class="fas fa-plus"></i> Create Class</button>
+                             <!-- MODIFIED: Button layout -->
+                             <div class="content-header-actions admin-only">
+                                <button class="btn btn-sm" id="createClassBtn"><i class="fas fa-plus"></i> Create Class</button>
                                 <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
                              </div>
                          </div>
@@ -1792,7 +1785,7 @@
                              </table>
                          </div>
                          <!-- NEW: Show all classes button -->
-                         <button class="btn btn-sm" id="showAllManageClassesBtn" style="width: auto; margin-top: 10px; display: none;">
+                         <button class="btn btn-sm admin-only" id="showAllManageClassesBtn" style="width: auto; margin-top: 10px; display: none;">
                              <i class="fas fa-chevron-down"></i> Show all classes...
                          </button>
                     </div>
@@ -1800,9 +1793,7 @@
                     <div id="resultsPage" class="page-content hidden">
                          <div class="content-header">
                              <h2>Results & Analytics</h2>
-                             <div class="content-header-actions">
-                                <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
-                             </div>
+                             <button class="btn btn-sm back-to-dashboard-btn"><i class="fas fa-arrow-left"></i> Back</button>
                          </div>
                          <div class="table-container">
                              <table id="resultsTable">
@@ -2120,14 +2111,13 @@
         // --- DOM Elements ---
         // Moved all element selectors inside init() to prevent race conditions
         let authScreen, appScreen, loginForm, registerForm, logoutBtn, authTabs, navLinks, pages, tabs, tabContents, addExamBtn, addExamModal, examForm, pendingExamsTableBody, recentExamsTableBody, usersTableBody, manageUsersTableBody, resultsTableBody, manageExamsTableBody, examOptionsContainer, prevQuestionBtn, nextQuestionBtn, submitExamBtn, backToDashboardBtn, examDoneBtn, examEditorPage, examEditorTitle, addQuestionForm, questionList, questionCount, editorBackToDashboardBtn, editExamDetailsForm, editQuestionModal, editQuestionForm, editUserModal, editUserForm, pdfPreviewModal, addResourceModal, securityModal, joinExamModal, joinExamForm, joinExamCodeInput, confirmationModal, bulkJsonInput, bulkUploadBtn, downloadExamsBtn, mobileNavToggle, sidebar, sidebarClose, overlay, usersPageTitle, showAllUsersBtn, showAllManageUsersBtn, statsContainer, showAllManageExamsBtn, saveAndExitExamBtn, manageExamListContainer, createClassBtn, classesPage, manageClassesTableBody, classModal, classForm, manageStudentsModal, assignExamModal, manageClassListContainer, showAllManageClassesBtn;
-            
+
         // Mock Database
         class MockDatabase {
             constructor() {
                 this.users = JSON.parse(localStorage.getItem('examUsers')) || [];
                 this.exams = JSON.parse(localStorage.getItem('examExams')) || [];
                 this.results = JSON.parse(localStorage.getItem('examResults')) || [];
-                // NEW: Added classes
                 this.classes = JSON.parse(localStorage.getItem('examClasses')) || [];
                 
                 if (this.users.length === 0) {
@@ -2178,13 +2168,13 @@
                         }
                     });
                     
-                    // NEW: Anonymize classes
+                    // Anonymize classes from deleted teachers
                     this.classes.forEach(cls => {
-                        if (deletedUserIds.includes(cls.teacherId)) {
-                            cls.teacherName = "Archived User";
+                         if (deletedUserIds.includes(cls.teacherId)) {
+                            cls.teacher = "Archived User";
                             cls.teacherId = null;
                         }
-                        // NEW: Remove deleted students from classes
+                        // Remove deleted students from classes
                         cls.students = cls.students.filter(studentId => !deletedUserIds.includes(studentId));
                     });
                 }
@@ -2241,20 +2231,21 @@
                             { type: 'single', question: "What is the unit of force?", options: ["Newton", "Joule", "Watt", "Pascal"], correctAnswer: 0 },
                             { type: 'single', question: "Which law states F=ma?", options: ["Newton's 1st Law", "Newton's 2nd Law", "Newton's 3rd Law", "Law of Gravity"], correctAnswer: 1 },
                             { type: 'single', question: "What is the speed of light?", options: ["3x10^8 m/s", "300 m/s", "100 km/h", "Sound speed"], correctAnswer: 0 },
-                            { type: 'single', question: "Kinetic Energy depends on?", options: ["Height", "Velocity", "Time", "Volume"], correctAnswer: 1 },
-                            { type: 'single', question: "Gravity on Earth is approx?", options: ["9.8 m/s^2", "10.5 m/s^2", "5 m/s^2", "15 m/s^2"], correctAnswer: 0 }
+                            { type: 'multiple', question: "Which of these are planets?", options: ["Earth", "Sun", "Mars", "Moon"], correctAnswer: [true, false, true, false] },
+                            { type: 'truefalse', question: "Gravity on Earth is approx 9.8 m/s^2.", correctAnswer: 'true' },
+                            { type: 'fill', question: "The chemical symbol for water is __.", correctAnswer: 'H2O' },
+                            { type: 'essay', question: "Explain Newton's 3rd Law." }
                         ],
                         resources: []
                     }
                 ];
 
                 this.results = [
-                    { id: 101, studentId: 3, studentName: "Student One", examId: 2, examTitle: "Physics Final (Grade 8)", score: 4, total: 5, date: new Date().toLocaleString(), status: 'active' }
+                    { id: 101, studentId: 3, studentName: "Student One", examId: 2, examTitle: "Physics Final (Grade 8)", score: 4, total: 6, date: new Date().toLocaleString(), status: 'active' } // 6 auto-graded questions
                 ];
                 
                 this.classes = [
-                    { id: 1001, name: "Physics Grade 8", teacherId: 4, teacherName: "Teacher Two (New)", students: [3, 5], exams: [2] },
-                    { id: 1002, name: "Grade 12 Chem", teacherId: 2, teacherName: "Teacher One (Old)", students: [3], exams: [] }
+                    { id: 1, name: "Physics Grade 8", teacher: "Teacher Two (New)", teacherId: 4, students: [3, 5], exams: [2] }
                 ];
                 
                 this.saveToStorage();
@@ -2335,7 +2326,7 @@
                 this.exams = this.exams.filter(e => e.id !== examId);
                 // Also delete associated results
                 this.results = this.results.filter(r => r.examId !== examId);
-                // NEW: Remove from classes
+                // Remove exam from classes
                 this.classes.forEach(cls => {
                     cls.exams = cls.exams.filter(id => id !== examId);
                 });
@@ -2384,12 +2375,11 @@
             }
             
             saveResult(resultData) {
-                // NEW: Add active status
                 const newResult = { id: Date.now(), ...resultData, date: new Date().toLocaleString(), status: 'active' };
                 this.results.push(newResult);
                 this.saveToStorage();
             }
-            // MODIFIED: Update result status
+            // MODIFIED: For retakes
             updateResultStatus(resultId, status) {
                 const result = this.results.find(r => r.id === resultId);
                 if (result) {
@@ -2401,8 +2391,8 @@
                 this.results = this.results.filter(r => r.id !== resultId);
                 this.saveToStorage();
             }
+            // MODIFIED: Check for ACTIVE results
             hasStudentTakenExam(studentId, examId) {
-                // MODIFIED: Check for an *active* result
                 return this.results.some(r => r.studentId === studentId && r.examId === examId && r.status === 'active');
             }
             
@@ -2430,21 +2420,21 @@
             }
             addStudentToClass(classId, studentId) {
                 const cls = this.findClassById(classId);
-                if(cls && !cls.students.includes(studentId)) {
+                if (cls && !cls.students.includes(studentId)) {
                     cls.students.push(studentId);
                     this.saveToStorage();
                 }
             }
             removeStudentFromClass(classId, studentId) {
                 const cls = this.findClassById(classId);
-                if(cls) {
+                if (cls) {
                     cls.students = cls.students.filter(id => id !== studentId);
                     this.saveToStorage();
                 }
             }
             assignExamToClass(classId, examId) {
                 const cls = this.findClassById(classId);
-                if(cls && !cls.exams.includes(examId)) {
+                if (cls && !cls.exams.includes(examId)) {
                     cls.exams.push(examId);
                     this.saveToStorage();
                 }
@@ -2471,9 +2461,9 @@
             pendingConfirmation: null, // NEW: For confirmation modal
         };
 
-        // --- Init Function ---
+        // --- Initialization ---
         function init() {
-            // Find all elements
+            // --- Query Selectors ---
             authScreen = document.getElementById('authScreen');
             appScreen = document.getElementById('appScreen');
             loginForm = document.getElementById('loginForm');
@@ -2487,18 +2477,21 @@
             addExamBtn = document.getElementById('addExamBtn');
             addExamModal = document.getElementById('addExamModal');
             examForm = document.getElementById('examForm');
+            
             pendingExamsTableBody = document.getElementById('pendingExamsTable').querySelector('tbody');
             recentExamsTableBody = document.getElementById('recentExamsTable').querySelector('tbody');
             usersTableBody = document.getElementById('usersTable').querySelector('tbody');
             manageUsersTableBody = document.getElementById('manageUsersTable').querySelector('tbody');
             resultsTableBody = document.getElementById('resultsTable').querySelector('tbody');
             manageExamsTableBody = document.getElementById('manageExamsTable').querySelector('tbody');
+
             examOptionsContainer = document.getElementById('examOptionsContainer');
             prevQuestionBtn = document.getElementById('prevQuestion');
             nextQuestionBtn = document.getElementById('nextQuestion');
             submitExamBtn = document.getElementById('submitExam');
             backToDashboardBtn = document.getElementById('backToDashboardBtn');
-            examDoneBtn = document.getElementById('examDoneBtn');
+            examDoneBtn = document.getElementById('examDoneBtn'); // NEW
+
             examEditorPage = document.getElementById('examEditorPage');
             examEditorTitle = document.getElementById('examEditorTitle');
             addQuestionForm = document.getElementById('addQuestionForm');
@@ -2506,31 +2499,42 @@
             questionCount = document.getElementById('questionCount');
             editorBackToDashboardBtn = document.getElementById('editorBackToDashboardBtn');
             editExamDetailsForm = document.getElementById('editExamDetailsForm');
+            
             editQuestionModal = document.getElementById('editQuestionModal');
             editQuestionForm = document.getElementById('editQuestionForm');
-            editUserModal = document.getElementById('editUserModal');
-            editUserForm = document.getElementById('editUserForm');
+            editUserModal = document.getElementById('editUserModal'); // NEW
+            editUserForm = document.getElementById('editUserForm'); // NEW
             pdfPreviewModal = document.getElementById('pdfPreviewModal');
             addResourceModal = document.getElementById('addResourceModal');
             securityModal = document.getElementById('securityModal');
+            
+            // NEW: Exam ID Modal
             joinExamModal = document.getElementById('joinExamModal');
             joinExamForm = document.getElementById('joinExamForm');
             joinExamCodeInput = document.getElementById('joinExamCodeInput');
+            
+            // NEW: Confirmation Modal
             confirmationModal = document.getElementById('confirmationModal');
+            
             bulkJsonInput = document.getElementById('bulkJsonInput');
             bulkUploadBtn = document.getElementById('bulkUploadBtn');
             downloadExamsBtn = document.getElementById('downloadExamsBtn');
+
             mobileNavToggle = document.getElementById('mobileNavToggle');
             sidebar = document.getElementById('sidebar');
             sidebarClose = document.getElementById('sidebarClose');
             overlay = document.getElementById('overlay');
             usersPageTitle = document.getElementById('usersPageTitle');
+            statsContainer = document.getElementById('statsContainer');
+            
+            // NEW: User list "Show All" buttons
             showAllUsersBtn = document.getElementById('showAllUsersBtn');
             showAllManageUsersBtn = document.getElementById('showAllManageUsersBtn');
-            statsContainer = document.getElementById('statsContainer');
             showAllManageExamsBtn = document.getElementById('showAllManageExamsBtn');
             saveAndExitExamBtn = document.getElementById('saveAndExitExamBtn');
             manageExamListContainer = document.getElementById('manageExamListContainer');
+
+            // NEW: Class Management Elements
             createClassBtn = document.getElementById('createClassBtn');
             classesPage = document.getElementById('classesPage');
             manageClassesTableBody = document.getElementById('manageClassesTable').querySelector('tbody');
@@ -2540,8 +2544,9 @@
             assignExamModal = document.getElementById('assignExamModal');
             manageClassListContainer = document.getElementById('manageClassListContainer');
             showAllManageClassesBtn = document.getElementById('showAllManageClassesBtn');
+
             
-            // Check for saved user
+            // --- Initial Load ---
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 state.currentUser = JSON.parse(savedUser);
@@ -2633,51 +2638,53 @@
             
             backToDashboardBtn.addEventListener('click', handleBackToDashboard); // For exam page
             examDoneBtn.addEventListener('click', handleBackToDashboard); // For result page
+            saveAndExitExamBtn.addEventListener('click', handleBackToDashboard);
             
             document.querySelectorAll('.back-to-dashboard-btn').forEach(btn => {
                 btn.addEventListener('click', handleBackToDashboard); // For management pages
             });
             editorBackToDashboardBtn.addEventListener('click', handleBackToDashboard);
-            saveAndExitExamBtn.addEventListener('click', handleBackToDashboard); // NEW
 
             examOptionsContainer.addEventListener('click', (e) => {
                 const clickedOption = e.target.closest('.option');
                 if (!clickedOption) return;
                 if (state.isPreviewMode) return;
                 
-                const questionType = state.currentExam.questions[state.currentQuestionIndex].type || 'single';
-                
-                if (questionType === 'single') {
+                // NEW: Handle different input types
+                const input = clickedOption.querySelector('input');
+                if (input.type === 'radio') {
+                    // Radio button logic (deselect others)
                     examOptionsContainer.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
                     clickedOption.classList.add('selected');
-                    clickedOption.querySelector('input[type="radio"]').checked = true;
-                } else if (questionType === 'multiple') {
-                    // MODIFIED: Toggle checkbox correctly
-                    const checkbox = clickedOption.querySelector('input[type="checkbox"]');
-                    if (e.target !== checkbox) { // Only toggle if not clicking checkbox itself
-                        checkbox.checked = !checkbox.checked;
+                    input.checked = true;
+                } else if (input.type === 'checkbox') {
+                    // Checkbox logic (toggle self)
+                    // MODIFIED: Fix for checkbox not checking
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                         input.checked = !input.checked;
                     }
-                    clickedOption.classList.toggle('selected', checkbox.checked);
+                    clickedOption.classList.toggle('selected', input.checked);
                 }
+                
                 saveAnswer();
             });
             
             addQuestionForm.addEventListener('submit', handleAddQuestion);
-            
-            // NEW: Question Type Toggle
+            // NEW: Add dynamic question fields
             document.getElementById('questionTypeInput').addEventListener('change', (e) => {
-                toggleQuestionFields('add', e.target.value);
+                toggleQuestionFields(e.target.value, 'add');
             });
             document.getElementById('editQuestionTypeInput').addEventListener('change', (e) => {
-                toggleQuestionFields('edit', e.target.value);
+                toggleQuestionFields(e.target.value, 'edit');
             });
             
-            // NEW: Add/Remove Options
-            document.getElementById('add-option-btn-single').addEventListener('click', () => addOption('add-options-single-list', 'single'));
-            document.getElementById('add-option-btn-multiple').addEventListener('click', () => addOption('add-options-multiple-list', 'multiple'));
-            document.getElementById('edit-option-btn-single').addEventListener('click', () => addOption('edit-options-single-list', 'single'));
-            document.getElementById('edit-option-btn-multiple').addEventListener('click', () => addOption('edit-options-multiple-list', 'multiple'));
+            // NEW: Add option buttons
+            document.getElementById('add-option-btn-single').addEventListener('click', () => addDynamicOption('add', 'single'));
+            document.getElementById('add-option-btn-multiple').addEventListener('click', () => addDynamicOption('add', 'multiple'));
+            document.getElementById('edit-option-btn-single').addEventListener('click', () => addDynamicOption('edit', 'single'));
+            document.getElementById('edit-option-btn-multiple').addEventListener('click', () => addDynamicOption('edit', 'multiple'));
 
+            
             questionList.addEventListener('click', (e) => {
                 const editBtn = e.target.closest('.edit-question');
                 const deleteBtn = e.target.closest('.delete-question');
@@ -2693,20 +2700,19 @@
             sidebarClose.addEventListener('click', closeSidebar);
             overlay.addEventListener('click', closeSidebar);
             
-            // MODIFIED: Use event delegation for stat cards
+            // MODIFIED: More robust click handler
             statsContainer.addEventListener('click', (e) => {
                 const card = e.target.closest('.stat-card.clickable');
                 if (!card) return;
                 
-                // NEW: Safety check
-                if (!state.currentUser) {
-                    console.log("User not loaded yet, ignoring card click.");
-                    return; 
+                // Safety check for user role
+                if (!state.currentUser || (state.currentUser.role === 'student' && (card.dataset.page === 'users' || card.dataset.page === 'exams'))) {
+                    return;
                 }
                 
                 const page = card.dataset.page;
                 const filter = card.dataset.filter;
-                if (state.currentUser.role === 'student' && (page === 'users' || page === 'exams')) return; 
+                
                 if (page === 'users') {
                     state.userFilter = filter || 'all';
                     updateTables(); 
@@ -2714,10 +2720,9 @@
                 handleNavClick(page);
             });
 
-            // MODIFIED: Use separate button for bulk upload trigger
             bulkUploadBtn.addEventListener('click', () => {
                 performAdminAction(() => {
-                    bulkJsonInput.click(); // Trigger the hidden file input
+                    bulkJsonInput.click();
                 });
             });
             bulkJsonInput.addEventListener('change', handleBulkUpload);
@@ -2794,7 +2799,6 @@
                 updateTables(true); // Force redraw
             });
             
-            // NEW: Exam list "Show All" button
             showAllManageExamsBtn.addEventListener('click', () => {
                 manageExamListContainer.classList.toggle('expanded');
                 showAllManageExamsBtn.classList.toggle('active');
@@ -2803,15 +2807,17 @@
                 } else {
                     showAllManageExamsBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all exams...`;
                 }
-                renderExamManagementTable(true); // Force redraw
+                renderExamManagementTable(); // Force redraw
             });
             
             // --- NEW: Class Management Listeners ---
-            createClassBtn.addEventListener('click', openCreateClassModal);
+            createClassBtn.addEventListener('click', () => openCreateClassModal());
             classForm.addEventListener('submit', handleSaveClass);
             manageClassesTableBody.addEventListener('click', handleClassManagementClick);
+            
             document.getElementById('addStudentToClassBtn').addEventListener('click', handleAddStudentToClass);
             document.getElementById('assignExamToClassBtn').addEventListener('click', handleAssignExamToClass);
+            
             showAllManageClassesBtn.addEventListener('click', () => {
                 manageClassListContainer.classList.toggle('expanded');
                 showAllManageClassesBtn.classList.toggle('active');
@@ -2820,7 +2826,7 @@
                 } else {
                     showAllManageClassesBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Show all classes...`;
                 }
-                renderClassManagementTable(true); // Force redraw
+                renderClassManagementTable(); // Force redraw
             });
         }
         
@@ -2914,7 +2920,7 @@
                 if(page === 'exams') renderExamManagementTable();
                 if(page === 'results') renderResultsTable();
                 if(page === 'users') updateTables(); // NEW: Refresh users table on nav
-                if(page === 'classes') renderClassManagementTable(); // NEW: Refresh classes table
+                if(page === 'classes') renderClassManagementTable(); // NEW
             }
             navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === page));
         }
@@ -2928,7 +2934,7 @@
             switchPage('dashboard');
             navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === 'dashboard'));
             
-            // MODIFIED: Added check
+            // MODIFIED: Added check for currentUser to prevent logout errors
             if (state.currentUser) {
                 updateTables(); // Refresh dashboard tables
                 updateStats(); // Refresh stats
@@ -2989,15 +2995,15 @@
                 performAdminAction(() => { openExamEditor(id); });
             } else if (target.classList.contains('delete-exam')) {
                  performAdminAction(() => {
-                     const exam = state.db.findExamById(id);
-                     showConfirmation("Delete Exam?", `Are you sure you want to delete "${exam.title}"? This will also remove all results. This cannot be undone.`, () => {
-                         state.db.deleteExam(id);
-                         renderExamManagementTable();
-                         updateTables(); // NEW: Refresh dashboard tables
-                         updateStats();
-                         showToast("Exam deleted successfully.", "success");
-                     });
-                 });
+                    const exam = state.db.findExamById(id);
+                    showConfirmation("Delete Exam?", `Are you sure you want to delete "${exam.title}"? This will also remove all results. This cannot be undone.`, () => {
+                        state.db.deleteExam(id);
+                        renderExamManagementTable();
+                        updateTables(); // NEW: Refresh dashboard tables
+                        updateStats();
+                        showToast("Exam deleted successfully.", "success");
+                    });
+                });
             } else if (target.classList.contains('preview-exam-btn')) {
                 startExam(id, true);
             }
@@ -3067,28 +3073,28 @@
         }
 
         function handleBulkUpload(e) {
-            // No need for admin check, already done by button click
-             const file = e.target.files[0];
-             if(!file) return;
-             const reader = new FileReader();
-             reader.onload = function(event) {
-                 try {
-                     const exams = JSON.parse(event.target.result);
-                     if(Array.isArray(exams)) {
-                         // MODIFIED: Pass current user
-                         state.db.bulkImportExams(exams, state.currentUser);
-                         showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
-                         renderExamManagementTable();
-                         updateTables(); // FIXED: Refresh dashboard tables too
-                         updateStats();
-                     } else { showToast("Invalid JSON format. Expected an array.", "error"); }
-                 } catch(err) { 
-                     showToast("Error parsing JSON file.", "error"); 
-                     console.error("JSON Parse Error:", err); // Added for debugging
-                 }
-             };
-             reader.readAsText(file);
-             e.target.value = '';
+            // This function is now called *after* performAdminAction
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const exams = JSON.parse(event.target.result);
+                    if(Array.isArray(exams)) {
+                        // MODIFIED: Pass current user
+                        state.db.bulkImportExams(exams, state.currentUser);
+                        showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
+                        renderExamManagementTable();
+                        updateTables(); // FIXED: Refresh dashboard tables too
+                        updateStats();
+                    } else { showToast("Invalid JSON format. Expected an array.", "error"); }
+                } catch(err) { 
+                    showToast("Error parsing JSON file.", "error"); 
+                    console.error("JSON Parse Error:", err); // Added for debugging
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
         }
 
         function exportExams() {
@@ -3127,23 +3133,22 @@
             showToast("Resource added successfully.", "success");
         }
 
-        // MODIFIED: Added forceRedraw param
-        function renderExamManagementTable(forceRedraw = false) {
-            // NEW: Added check
-            if (state.currentPage !== 'exams' && !forceRedraw) return;
-            
-            const isExpanded = manageExamListContainer.classList.contains('expanded');
+        function renderExamManagementTable() {
             manageExamsTableBody.innerHTML = '';
+            const isAdmin = state.currentUser.role === 'admin';
+            // document.getElementById('bulkUploadSection').classList.toggle('hidden', !isAdmin);
             
             const exams = state.db.exams;
+            const isExpanded = manageExamListContainer.classList.contains('expanded');
             const examsToShow = isExpanded ? exams : exams.slice(0, 3);
             
-            showAllManageExamsBtn.style.display = (exams.length > 3) ? 'flex' : 'none';
-
             if (exams.length === 0) {
                 manageExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="6"><i class="fas fa-file-excel"></i>No exams found.</td></tr>`;
+                showAllManageExamsBtn.style.display = 'none';
                 return;
             }
+            
+            showAllManageExamsBtn.style.display = (exams.length > 3) ? 'flex' : 'none';
 
             examsToShow.forEach(exam => {
                 let resourceButtons = '';
@@ -3168,7 +3173,8 @@
                     </div>
                 `;
                 
-                const subjectDisplay = `<span class="desktop-text">${exam.subject}</span><span class="mobile-text">${exam.subject.substring(0,3)}</span>`;
+                const sub = exam.subject || 'N/A';
+                const subjectDisplay = `<span class="desktop-text">${sub}</span><span class="mobile-text">${sub.substring(0,4)}</span>`;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -3193,42 +3199,40 @@
                 return;
             }
             
-            // NEW: Sort by active first, then date
-            results.sort((a, b) => {
-                if (a.status === 'active' && b.status !== 'active') return -1;
-                if (a.status !== 'active' && b.status === 'active') return 1;
-                return new Date(b.date) - new Date(a.date);
-            });
-            
             results.forEach(r => {
-                const row = document.createElement('tr');
-                const percentage = Math.round((r.score / r.total) * 100);
-                
-                // NEW: Handle retaken status
-                const isRetaken = r.status === 'retaken';
-                if (isRetaken) {
-                    row.classList.add('retaken');
-                }
-                
-                const actionButtons = isAdmin ? `
-                    <div class="action-wrapper">
-                        <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
-                        <div class="action-buttons">
-                            ${!isRetaken ? `<button class="action-btn reset-result" data-id="${r.id}" title="Reset"><i class="fas fa-redo"></i> Reset Attempt</button>` : ''}
-                            <button class="action-btn delete-result" data-id="${r.id}" title="Delete"><i class="fas fa-trash"></i> Delete Result</button>
-                        </div>
-                    </div>
-                ` : '';
-                
-                row.innerHTML = `
-                    <td data-label="Student">${r.studentName}</td>
-                    <td data-label="Exam">${r.examTitle}</td>
-                    <td data-label="Score">${r.score} / ${r.total} (${percentage}%)</td>
-                    <td data-label="Date">${r.date}</td>
-                    <td data-label="Status"><span class="status ${isRetaken ? 'status-retaken' : 'status-completed'}">${isRetaken ? 'Retaken' : 'Completed'}</span></td>
-                    <td data-label="Actions" class="admin-action-cell">${actionButtons}</td>
-                `;
-                resultsTableBody.appendChild(row);
+                  const row = document.createElement('tr');
+                  const percentage = Math.round((r.score / r.total) * 100);
+                  
+                  // NEW: Handle status
+                  const status = r.status || 'active';
+                  let statusDisplay = '';
+                  if (status === 'active') {
+                      statusDisplay = `<span class="status status-approved">Active</span>`;
+                  } else if (status === 'retaken') {
+                      statusDisplay = `<span class="status status-retaken">Retaken</span>`;
+                      row.classList.add('retaken');
+                  }
+                  
+                  // NEW: Modified admin buttons
+                  const adminBtns = isAdmin ? `
+                      <div class="action-wrapper">
+                          <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                          <div class="action-buttons">
+                              <button class="action-btn reset-result" data-id="${r.id}" title="Reset Attempt"><i class="fas fa-redo"></i> Reset Attempt</button>
+                              <button class="action-btn delete-result" data-id="${r.id}" title="Delete Result"><i class="fas fa-trash"></i> Delete Result</button>
+                          </div>
+                      </div>
+                  ` : '';
+                  
+                  row.innerHTML = `
+                      <td data-label="Student">${r.studentName}</td>
+                      <td data-label="Exam">${r.examTitle}</td>
+                      <td data-label="Score">${r.score} / ${r.total} (${percentage}%)</td>
+                      <td data-label="Date">${r.date}</td>
+                      <td data-label="Status">${statusDisplay}</td>
+                      <td data-label="Actions" class="admin-action-cell">${adminBtns}</td>
+                  `;
+                  resultsTableBody.appendChild(row);
             });
         }
         
@@ -3240,7 +3244,7 @@
             if(btn.classList.contains('reset-result')) {
                 performAdminAction(() => {
                     const result = state.db.results.find(r=>r.id===id);
-                    showConfirmation("Reset Attempt?", `Are you sure you want to mark this result for ${result.studentName} as 'retaken'? This will allow them to take the exam again.`, () => {
+                    showConfirmation("Reset Attempt?", `This will mark ${result.studentName}'s attempt as 'Retaken' and allow them to take the exam again.`, () => {
                         state.db.updateResultStatus(id, 'retaken');
                         renderResultsTable();
                         showToast("Result marked for retake.", "success");
@@ -3314,7 +3318,7 @@
                 });
                 showToast('Registration successful! Please log in.', 'success');
                 registerForm.reset(); 
-                // MODIFIED: Switch to login tab
+                // NEW: Switch to login tab
                 switchAuthTab('login');
             }, 500);
         }
@@ -3345,12 +3349,6 @@
                 
                 // NEW: Toggle admin class on body
                 document.body.classList.toggle('is-admin', isAdmin);
-                
-                // NEW: control visibility of buttons on exams page
-                document.getElementById('addExamBtn').style.display = isAdmin ? 'flex' : 'none';
-                document.getElementById('downloadExamsBtn').style.display = isAdmin ? 'flex' : 'none';
-                // MODIFIED: Use classList
-                document.getElementById('bulkUploadSection').classList.toggle('admin-only', isAdmin);
                 
                 document.querySelector('.nav-link[data-page="users"]').style.display = isStudent ? 'none' : 'flex';
                 document.querySelector('.nav-link[data-page="exams"]').style.display = isStudent ? 'none' : 'flex';
@@ -3426,15 +3424,19 @@
         
         function renderDashboardRecentTable() {
              recentExamsTableBody.innerHTML = '';
+             const subjectMapMobile = { 'math': 'Mat', 'physics': 'Phy', 'chemistry': 'Chem', 'biology': 'Bio' };
+
              const recentExams = state.db.exams.filter(exam => exam.status === 'approved');
              if (recentExams.length === 0) {
                  recentExamsTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-file-alt"></i>No approved exams.</td></tr>`;
              } else {
                  recentExams.forEach(exam => {
                      const row = document.createElement('tr');
-                     const participantCount = state.db.results.filter(r => r.examId === exam.id).length;
+                     const participantCount = state.db.results.filter(r => r.examId === exam.id && r.status === 'active').length;
                      
-                     const subjectDisplay = `<span class="desktop-text">${exam.subject}</span><span class="mobile-text">${exam.subject.substring(0,3)}</span>`;
+                     const sub = exam.subject || 'N/A';
+                     const shortSub = subjectMapMobile[sub.toLowerCase()] || sub.substring(0,3);
+                     const subjectDisplay = `<span class="desktop-text">${sub}</span><span class="mobile-text">${shortSub}</span>`;
                      
                      row.innerHTML = `<td data-label="Title">${exam.title}</td><td data-label="Subject">${subjectDisplay}</td><td data-label="Questions">${exam.questions.length}</td><td data-label="Participants">${participantCount}</td><td style="min-width: 60px;" data-label="Actions" class="admin-action-cell"></td>`;
                      recentExamsTableBody.appendChild(row);
@@ -3558,7 +3560,7 @@
             setTimeout(() => {
                 // MODIFIED: Trim whitespace from code
                 const examCode = joinExamCodeInput.value.trim();
-                console.log("Joining exam with code:", `'${examCode}'`); // DEBUGGING
+                console.log("Joining exam with code:", `'${examCode}'`); // DEBUG
                 const exam = state.db.findExamByCode(examCode);
                 setButtonLoading(button, false);
 
@@ -3610,7 +3612,7 @@
 
             loadQuestion(state.currentQuestionIndex); 
             if(!isPreview && exam.duration > 0) startTimer();
-            else document.getElementById('timeRemaining').textContent = isPreview ? "N/A (Preview)" : (exam.duration === 0 ? "Unlimited" : "60:00");
+            else document.getElementById('timeRemaining').textContent = isPreview ? "N/A (Preview)" : (exam.duration === 0 ? "Unlimited" : "N/A");
             
             switchPage('takeExam');
         }
@@ -3618,53 +3620,73 @@
         function loadQuestion(index) {
             if (!state.currentExam) return;
             const q = state.currentExam.questions[index];
-            // MODIFIED: Default to 'single' if type is missing
-            const questionType = q.type || 'single';
+            // NEW: Default to 'single' if type is missing
+            const qType = q.type || 'single';
             
             document.getElementById('questionText').textContent = q.question;
             document.getElementById('currentQuestion').textContent = index + 1;
             examOptionsContainer.innerHTML = '';
             
-            // MODIFIED: Handle different question types
-            switch (questionType) {
+            // NEW: Render question based on type
+            switch(qType) {
                 case 'single':
                     q.options.forEach((optionText, i) => {
-                        const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
+                        const div = document.createElement('div'); 
+                        div.className = 'option'; 
+                        div.dataset.index = i;
                         div.innerHTML = `<input type="radio" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
                         examOptionsContainer.appendChild(div);
-                        if (state.userAnswers[index] === i) { div.querySelector('input').checked = true; div.classList.add('selected'); }
+                        if (state.userAnswers[index] === i) { 
+                            div.querySelector('input').checked = true; 
+                            div.classList.add('selected'); 
+                        }
                     });
                     break;
                 case 'multiple':
                     q.options.forEach((optionText, i) => {
-                        const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
+                        const div = document.createElement('div'); 
+                        div.className = 'option'; 
+                        div.dataset.index = i;
                         div.innerHTML = `<input type="checkbox" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
                         examOptionsContainer.appendChild(div);
-                        const userAnswersForQ = state.userAnswers[index] || [];
-                        if (userAnswersForQ[i] === true) {
-                            div.querySelector('input').checked = true; div.classList.add('selected');
+                        if (state.userAnswers[index] && state.userAnswers[index][i]) {
+                            div.querySelector('input').checked = true; 
+                            div.classList.add('selected');
                         }
                     });
                     break;
                 case 'truefalse':
                     ['True', 'False'].forEach((optionText, i) => {
-                        const div = document.createElement('div'); div.className = 'option'; div.dataset.index = i;
                         const val = optionText.toLowerCase();
+                        const div = document.createElement('div'); 
+                        div.className = 'option'; 
+                        div.dataset.index = val;
                         div.innerHTML = `<input type="radio" name="answer" value="${val}" id="option${i}"><label for="option${i}">${optionText}</label>`;
                         examOptionsContainer.appendChild(div);
-                        if (state.userAnswers[index] === val) { div.querySelector('input').checked = true; div.classList.add('selected'); }
+                        if (state.userAnswers[index] === val) { 
+                            div.querySelector('input').checked = true; 
+                            div.classList.add('selected'); 
+                        }
                     });
                     break;
                 case 'fill':
-                    examOptionsContainer.innerHTML = `<div class="form-group"><label>Your Answer:</label><input type="text" class="form-control answer-input" id="fillAnswer"></div>`;
+                    examOptionsContainer.innerHTML = `
+                        <div class="form-group">
+                            <label>Your Answer:</label>
+                            <input type="text" class="form-control answer-input" id="fillAnswerInput">
+                        </div>`;
                     if (state.userAnswers[index]) {
-                        document.getElementById('fillAnswer').value = state.userAnswers[index];
+                        document.getElementById('fillAnswerInput').value = state.userAnswers[index];
                     }
                     break;
                 case 'essay':
-                    examOptionsContainer.innerHTML = `<div class="form-group"><label>Your Answer:</label><textarea class="form-control answer-textarea" id="essayAnswer"></textarea></div>`;
+                     examOptionsContainer.innerHTML = `
+                        <div class="form-group">
+                            <label>Your Answer:</label>
+                            <textarea class="form-control answer-textarea" id="essayAnswerInput"></textarea>
+                        </div>`;
                     if (state.userAnswers[index]) {
-                        document.getElementById('essayAnswer').value = state.userAnswers[index];
+                        document.getElementById('essayAnswerInput').value = state.userAnswers[index];
                     }
                     break;
             }
@@ -3679,30 +3701,29 @@
         function saveAnswer() {
             if(state.isPreviewMode) return;
             
-            const questionType = state.currentExam.questions[state.currentQuestionIndex].type || 'single';
+            const qType = state.currentExam.questions[state.currentQuestionIndex].type || 'single';
             
-            switch (questionType) {
+            switch(qType) {
                 case 'single':
-                    const selectedRadio = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
-                    state.userAnswers[state.currentQuestionIndex] = selectedRadio ? parseInt(selectedRadio.value) : null;
+                    const selectedSingle = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
+                    if (selectedSingle) state.userAnswers[state.currentQuestionIndex] = parseInt(selectedSingle.value);
                     break;
                 case 'multiple':
-                    const selectedCheckboxes = document.querySelectorAll('#examOptionsContainer input[type="checkbox"]');
-                    const answers = [];
-                    selectedCheckboxes.forEach((cb, i) => {
-                        answers[i] = cb.checked;
-                    });
+                    const selectedMultiple = document.querySelectorAll('#examOptionsContainer input[type="checkbox"]');
+                    const answers = Array.from(selectedMultiple).map(cb => cb.checked);
                     state.userAnswers[state.currentQuestionIndex] = answers;
                     break;
                 case 'truefalse':
                     const selectedTF = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
-                    state.userAnswers[state.currentQuestionIndex] = selectedTF ? selectedTF.value : null;
+                    if (selectedTF) state.userAnswers[state.currentQuestionIndex] = selectedTF.value;
                     break;
                 case 'fill':
-                    state.userAnswers[state.currentQuestionIndex] = document.getElementById('fillAnswer').value;
+                    const fillInput = document.getElementById('fillAnswerInput');
+                    if (fillInput) state.userAnswers[state.currentQuestionIndex] = fillInput.value;
                     break;
                 case 'essay':
-                    state.userAnswers[state.currentQuestionIndex] = document.getElementById('essayAnswer').value;
+                    const essayInput = document.getElementById('essayAnswerInput');
+                    if (essayInput) state.userAnswers[state.currentQuestionIndex] = essayInput.value;
                     break;
             }
         }
@@ -3737,43 +3758,48 @@
             }
 
             let score = 0; 
-            // MODIFIED: New scoring logic
-            state.userAnswers.forEach((answer, i) => {
+            let totalAutoGraded = 0;
+            
+            state.userAnswers.forEach((userAnswer, i) => {
                 const q = state.currentExam.questions[i];
-                const type = q.type || 'single';
-                // Use == to allow type coercion (e.g., 0 == "0")
-                const isCorrect = (valA, valB) => valA == valB;
+                const qType = q.type || 'single';
+                
+                // MODIFIED: Fix for type-insensitive comparison
+                const normalize = (val) => (val_unused) => val === null || val === undefined ? null : String(val).toLowerCase();
+                const userAnswerNorm = normalize(userAnswer);
+                const correctAnswerNorm = normalize(q.correctAnswer);
 
-                switch (type) {
+                switch(qType) {
                     case 'single':
-                        if (isCorrect(answer, q.correctAnswer)) score++;
+                        totalAutoGraded++;
+                        if (userAnswerNorm == correctAnswerNorm) score++; // Use == for type coercion
                         break;
                     case 'multiple':
-                        let allCorrect = true;
-                        if (!answer || answer.length === 0) allCorrect = false;
-                        else {
-                            for(let j=0; j<q.options.length; j++) {
-                                // Answer is true/false, correct answer is index
-                                const userAnswered = answer[j] === true;
-                                const shouldBeAnswered = (q.correctAnswer || []).includes(j);
-                                if (userAnswered !== shouldBeAnswered) {
-                                    allCorrect = false;
+                        totalAutoGraded++;
+                        let isCorrect = true;
+                        if (!userAnswer || userAnswer.length !== q.correctAnswer.length) {
+                            isCorrect = false;
+                        } else {
+                            for (let j = 0; j < userAnswer.length; j++) {
+                                // Compare boolean to string
+                                if (normalize(userAnswer[j]) != normalize(q.correctAnswer[j])) {
+                                    isCorrect = false;
                                     break;
                                 }
                             }
                         }
-                        if (allCorrect) score++;
+                        if (isCorrect) score++;
                         break;
                     case 'truefalse':
-                        if (isCorrect(answer, q.correctAnswer)) score++;
+                        totalAutoGraded++;
+                        if (userAnswerNorm == correctAnswerNorm) score++;
                         break;
                     case 'fill':
-                        if (answer && q.correctAnswer && answer.toLowerCase() === q.correctAnswer.toLowerCase()) {
-                            score++;
-                        }
+                        totalAutoGraded++;
+                        if (userAnswerNorm == correctAnswerNorm) score++;
                         break;
                     case 'essay':
-                        // Manual grade, do nothing
+                        // Not auto-graded
                         break;
                 }
             });
@@ -3784,19 +3810,19 @@
                 examId: state.currentExam.id,
                 examTitle: state.currentExam.title,
                 score: score,
-                total: state.currentExam.questions.length
+                total: totalAutoGraded
             });
             
             document.getElementById('questionContainer').classList.add('hidden');
             document.getElementById('activeExamControls').classList.add('hidden');
             document.getElementById('resultDisplay').classList.remove('hidden');
-            document.getElementById('finalScoreDisplay').textContent = `${score} / ${state.currentExam.questions.length}`;
+            document.getElementById('finalScoreDisplay').textContent = `${score} / ${totalAutoGraded}`;
             showToast("Exam submitted successfully!", "success");
         }
         
         function openExamEditor(examId) {
             const exam = state.db.findExamById(examId); if (!exam) return;
-            console.log("Editing exam:", JSON.stringify(exam)); // DEBUGGING
+            console.log("Editing exam:", exam); // DEBUG
             state.editingExamId = examId; 
             examEditorTitle.textContent = `Edit Exam: ${exam.title}`;
             
@@ -3818,86 +3844,6 @@
             showToast("Exam details updated.", "success");
         }
 
-        // --- NEW: Add/Remove Options ---
-        function addOption(listId, type, option = { text: '', correct: false }) {
-            const list = document.getElementById(listId);
-            const index = list.children.length;
-            const group = document.createElement('div');
-            group.className = 'option-input-group';
-            
-            if (type === 'single') {
-                group.innerHTML = `
-                    <input type="radio" name="${listId.startsWith('edit') ? 'editCorrectAnswer' : 'correctAnswer'}" value="${index}" ${option.correct ? 'checked' : ''} required>
-                    <input type="text" class="form-control" placeholder="Option ${index + 1}" value="${option.text}" required>
-                `;
-            } else if (type === 'multiple') {
-                 group.innerHTML = `
-                    <input type="checkbox" name="${listId.startsWith('edit') ? 'editCorrectAnswerMultiple' : 'correctAnswerMultiple'}" value="${index}" ${option.correct ? 'checked' : ''}>
-                    <input type="text" class="form-control" placeholder="Option ${index + 1}" value="${option.text}">
-                `;
-            }
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn-remove-option';
-            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-            removeBtn.onclick = () => group.remove();
-            group.appendChild(removeBtn);
-            
-            list.appendChild(group);
-        }
-        
-        // --- NEW: Toggle Question Form Fields ---
-        function setRequired(elements, isRequired) {
-            // MODIFIED: Handle single element or list
-            if (elements.forEach) {
-                elements.forEach(el => el.required = isRequired);
-            } else if (elements) {
-                elements.required = isRequired;
-            }
-        }
-        
-        function toggleQuestionFields(prefix, type) {
-            const form = prefix === 'add' ? addQuestionForm : editQuestionForm;
-            
-            const optionsSingle = form.querySelector(`#${prefix}-options-single`);
-            const optionsMultiple = form.querySelector(`#${prefix}-options-multiple`);
-            const answerTrueFalse = form.querySelector(`#${prefix}-answer-truefalse`);
-            const answerFill = form.querySelector(`#${prefix}-answer-fill`);
-            const answerEssay = form.querySelector(`#${prefix}-answer-essay`);
-            
-            const radioInputs = form.querySelectorAll(`input[name="${prefix === 'add' ? 'correctAnswer' : 'editCorrectAnswer'}"]`);
-            const radioTexts = form.querySelectorAll(`#${prefix}-options-single-list input[type="text"]`);
-            // MODIFIED: Corrected selector
-            const fillInput = form.querySelector(`#${prefix}AnswerFill`);
-            
-            // Hide all
-            [optionsSingle, optionsMultiple, answerTrueFalse, answerFill, answerEssay].forEach(el => el.classList.add('hidden'));
-            
-            // Remove all 'required'
-            setRequired(radioInputs, false);
-            setRequired(radioTexts, false);
-            setRequired(fillInput, false);
-            
-            // Show and set 'required' for the selected type
-            if (type === 'single') {
-                optionsSingle.classList.remove('hidden');
-                setRequired(radioInputs, true);
-                setRequired(radioTexts, true);
-            } else if (type === 'multiple') {
-                optionsMultiple.classList.remove('hidden');
-                // No fields are strictly required for multiple choice
-            } else if (type === 'truefalse') {
-                answerTrueFalse.classList.remove('hidden');
-            } else if (type === 'fill') {
-                answerFill.classList.remove('hidden');
-                setRequired(fillInput, true);
-            } else if (type === 'essay') {
-                answerEssay.classList.remove('hidden');
-            }
-        }
-
-        // --- NEW: Render Question List (Updated) ---
         function renderQuestionList() {
             const exam = state.db.findExamById(state.editingExamId); if (!exam) return;
             questionList.innerHTML = ''; 
@@ -3911,31 +3857,34 @@
 
             exam.questions.forEach((q, index) => {
                 const li = document.createElement('li'); li.className = 'question-list-item';
+                const qType = q.type || 'single';
                 let answerHtml = '';
-                
-                switch (q.type) {
+
+                switch(qType) {
                     case 'single':
-                        answerHtml = `<ul class="question-list-item-options">${q.options.map((opt, i) => `<li class="${i == q.correctAnswer ? 'correct' : ''}">${i+1}. ${opt}</li>`).join('')}</ul>`;
-                        break;
                     case 'multiple':
-                        answerHtml = `<ul class="question-list-item-options">${q.options.map((opt, i) => `<li class="${(q.correctAnswer || []).includes(i) ? 'correct' : ''}">${i+1}. ${opt}</li>`).join('')}</ul>`;
+                        answerHtml = `<ul class="question-list-item-options">` + 
+                            q.options.map((opt, i) => {
+                                let isCorrect = false;
+                                if (qType === 'single') isCorrect = (i == q.correctAnswer);
+                                if (qType === 'multiple') isCorrect = (String(q.correctAnswer[i]).toLowerCase() === 'true');
+                                return `<li class="${isCorrect ? 'correct' : ''}">${i+1}. ${opt}</li>`;
+                            }).join('') + `</ul>`;
                         break;
                     case 'truefalse':
                         answerHtml = `<div class="question-list-item-answer">Correct Answer: ${q.correctAnswer}</div>`;
                         break;
                     case 'fill':
-                        answerHtml = `<div class="question-list-item-answer">Correct Answer: ${q.correctAnswer}</div>`;
+                         answerHtml = `<div class="question-list-item-answer">Correct Answer: ${q.correctAnswer}</div>`;
                         break;
                     case 'essay':
                         answerHtml = `<div class="question-list-item-answer">Essay (Manual Grade)</div>`;
                         break;
-                    default: // Fallback for old questions
-                         answerHtml = `<ul class="question-list-item-options">${q.options.map((opt, i) => `<li class="${i == q.correctAnswer ? 'correct' : ''}">${i+1}. ${opt}</li>`).join('')}</ul>`;
                 }
                 
                 li.innerHTML = `
                     <div class="question-list-item-header">
-                        <h4>${index + 1}. ${q.question} <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(${q.type || 'single'})</span></h4>
+                        <h4>${index + 1}. [${qType}] ${q.question}</h4>
                         <div>
                             <button class="btn-icon edit-question" data-index="${index}"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon danger delete-question" data-index="${index}"><i class="fas fa-trash"></i></button>
@@ -3947,123 +3896,266 @@
             });
         }
         
-        // --- NEW: Handle Add Question (Updated) ---
-        function handleAddQuestion(e) {
-            e.preventDefault();
-            const type = document.getElementById('questionTypeInput').value;
-            const q = {
-                type: type,
-                question: document.getElementById('questionTextInput').value,
-                options: [],
-                correctAnswer: null
+        // --- NEW: Dynamic Question Form Logic ---
+        function setRequired(elements, isRequired) {
+            if (!elements) return;
+            // MODIFIED: Handle single element or list
+            const elementList = NodeList.prototype.isPrototypeOf(elements) ? elements : (Array.isArray(elements) ? elements : [elements]);
+            elementList.forEach(el => {
+                if (el) el.required = isRequired;
+            });
+        }
+
+        function toggleQuestionFields(type, formPrefix) {
+            const form = document.getElementById(formPrefix === 'add' ? 'addQuestionForm' : 'editQuestionForm');
+            
+            // All field groups
+            const fieldGroups = {
+                single: form.querySelector(`#${formPrefix}-options-single`),
+                multiple: form.querySelector(`#${formPrefix}-options-multiple`),
+                truefalse: form.querySelector(`#${formPrefix}-answer-truefalse`),
+                fill: form.querySelector(`#${formPrefix}-answer-fill`),
+                essay: form.querySelector(`#${formPrefix}-answer-essay`)
             };
             
-            if (type === 'single') {
-                const optionsList = document.getElementById('add-options-single-list');
-                const correctInput = addQuestionForm.querySelector('input[name="correctAnswer"]:checked');
-                if (!correctInput) {
-                    showToast("Please select a correct answer.", "error"); return;
-                }
-                q.correctAnswer = parseInt(correctInput.value);
-                optionsList.querySelectorAll('input[type="text"]').forEach(input => q.options.push(input.value));
-                
-            } else if (type === 'multiple') {
-                const optionsList = document.getElementById('add-options-multiple-list');
-                q.correctAnswer = [];
-                optionsList.querySelectorAll('.option-input-group').forEach((group, i) => {
-                    q.options.push(group.querySelector('input[type="text"]').value);
-                    if (group.querySelector('input[type="checkbox"]').checked) {
-                        q.correctAnswer.push(i);
-                    }
+            // All input elements
+            const inputs = {
+                singleOptions: fieldGroups.single.querySelectorAll('input[type="text"]'),
+                singleRadios: fieldGroups.single.querySelectorAll('input[type="radio"]'),
+                multipleOptions: fieldGroups.multiple.querySelectorAll('input[type="text"]'),
+                truefalseSelect: fieldGroups.truefalse.querySelector('select'),
+                // MODIFIED: Fix for typo
+                fillInput: fieldGroups.fill.querySelector('input')
+            };
+
+            // Hide all groups, remove all 'required'
+            for (const key in fieldGroups) {
+                if(fieldGroups[key]) fieldGroups[key].classList.add('hidden');
+            }
+            setRequired(inputs.singleOptions, false);
+            setRequired(inputs.singleRadios, false);
+            setRequired(inputs.multipleOptions, false);
+            setRequired(inputs.truefalseSelect, false);
+            setRequired(inputs.fillInput, false);
+
+            // Show and set 'required' for the selected type
+            switch(type) {
+                case 'single':
+                    fieldGroups.single.classList.remove('hidden');
+                    setRequired(inputs.singleOptions, true);
+                    setRequired(inputs.singleRadios, true);
+                    break;
+                case 'multiple':
+                    fieldGroups.multiple.classList.remove('hidden');
+                    setRequired(inputs.multipleOptions, true);
+                    // Checkboxes don't need 'required' for the group, only individual text
+                    break;
+                case 'truefalse':
+                    fieldGroups.truefalse.classList.remove('hidden');
+                    setRequired(inputs.truefalseSelect, true);
+                    break;
+                case 'fill':
+                    fieldGroups.fill.classList.remove('hidden');
+                    setRequired(inputs.fillInput, true);
+                    break;
+                case 'essay':
+                    fieldGroups.essay.classList.remove('hidden');
+                    break;
+            }
+        }
+        
+        function addDynamicOption(formPrefix, type) {
+            const listId = `${formPrefix}-options-${type}-list`;
+            const list = document.getElementById(listId);
+            const newIndex = list.children.length;
+            const optionType = (type === 'single') ? 'radio' : 'checkbox';
+            const name = (type === 'single') ? 'correctAnswer' : 'correctAnswerMultiple';
+            
+            const div = document.createElement('div');
+            div.className = 'option-input-group';
+            div.innerHTML = `
+                <input type="${optionType}" name="${name}" value="${newIndex}" ${type === 'single' ? 'required' : ''}>
+                <input type="text" class="form-control" placeholder="Option ${newIndex + 1}" ${type === 'single' ? 'required' : ''}>
+                <button type="button" class="btn-remove-option" title="Remove option"><i class="fas fa-times"></i></button>
+            `;
+            
+            div.querySelector('.btn-remove-option').addEventListener('click', () => {
+                div.remove();
+                // Re-index remaining options
+                const items = list.querySelectorAll('.option-input-group');
+                items.forEach((item, index) => {
+                    item.querySelector('input[type="text"]').placeholder = `Option ${index + 1}`;
+                    item.querySelector(`input[type="${optionType}"]`).value = index;
                 });
-                
-            } else if (type === 'truefalse') {
-                q.correctAnswer = document.getElementById('addAnswerTrueFalse').value;
-            } else if (type === 'fill') {
-                q.correctAnswer = document.getElementById('addAnswerFill').value;
-            } else if (type === 'essay') {
-                q.correctAnswer = null; // Manual grade
+            });
+            
+            list.appendChild(div);
+        }
+
+        function handleAddQuestion(e) {
+            e.preventDefault();
+            const form = e.target;
+            const type = form.querySelector('#questionTypeInput').value;
+            const q = {
+                type: type,
+                question: form.querySelector('#questionTextInput').value,
+            };
+
+            switch(type) {
+                case 'single':
+                    const correctSingle = form.querySelector('input[name="correctAnswer"]:checked');
+                    if (!correctSingle) {
+                        showToast("Please select a correct answer.", "error"); return;
+                    }
+                    q.options = Array.from(form.querySelectorAll('#add-options-single-list input[type="text"]')).map(inp => inp.value);
+                    q.correctAnswer = parseInt(correctSingle.value);
+                    break;
+                case 'multiple':
+                    q.options = Array.from(form.querySelectorAll('#add-options-multiple-list input[type="text"]')).map(inp => inp.value);
+                    q.correctAnswer = Array.from(form.querySelectorAll('#add-options-multiple-list input[type="checkbox"]')).map(cb => cb.checked);
+                    if (q.correctAnswer.every(val => val === false)) {
+                         showToast("Please select at least one correct answer.", "error"); return;
+                    }
+                    break;
+                case 'truefalse':
+                    q.correctAnswer = form.querySelector('#addAnswerTrueFalse').value;
+                    break;
+                case 'fill':
+                    q.correctAnswer = form.querySelector('#addAnswerFill').value;
+                    break;
+                case 'essay':
+                    q.correctAnswer = null; // No correct answer for essay
+                    break;
             }
             
             state.db.addQuestionToExam(state.editingExamId, q); 
             renderQuestionList(); 
-            addQuestionForm.reset();
-            toggleQuestionFields('add', 'single'); // Reset form to default
+            // Reset only the dynamic parts
+            form.querySelector('#questionTextInput').value = '';
+            document.getElementById('add-options-single-list').innerHTML = `
+                <div class="option-input-group">
+                    <input type="radio" name="correctAnswer" value="0" required>
+                    <input type="text" class="form-control" placeholder="Option 1" required>
+                </div>
+                <div class="option-input-group">
+                    <input type="radio" name="correctAnswer" value="1" required>
+                    <input type="text" class="form-control" placeholder="Option 2" required>
+                </div>`;
+            document.getElementById('add-options-multiple-list').innerHTML = `
+                <div class="option-input-group">
+                    <input type="checkbox" name="correctAnswerMultiple" value="0">
+                    <input type="text" class="form-control" placeholder="Option 1">
+                </div>
+                <div class="option-input-group">
+                    <input type="checkbox" name="correctAnswerMultiple" value="1">
+                    <input type="text" class="form-control" placeholder="Option 2">
+                </div>`;
+            form.querySelector('#addAnswerFill').value = '';
+            form.querySelector('#questionTypeInput').value = 'single';
+            toggleQuestionFields('single', 'add');
+            
             showToast("Question added.", "success");
         }
         
         function handleDeleteQuestion(examId, qIndex) { 
              showConfirmation("Delete Question?", `Are you sure you want to delete question ${qIndex + 1}?`, () => {
-                 state.db.deleteQuestionFromExam(examId, qIndex); 
-                 renderQuestionList(); 
-                 showToast("Question deleted.", "success");
+                state.db.deleteQuestionFromExam(examId, qIndex); 
+                renderQuestionList(); 
+                showToast("Question deleted.", "success");
              });
         }
         
-        // --- NEW: Open Edit Question Modal (Updated) ---
         function openEditQuestionModal(examId, qIndex) {
             const q = state.db.findExamById(examId).questions[qIndex]; if (!q) return;
+            const qType = q.type || 'single';
+            
             state.editingQuestionIndex = qIndex;
-            const type = q.type || 'single';
+            const form = document.getElementById('editQuestionForm');
             
-            document.getElementById('editQuestionTypeInput').value = type;
-            toggleQuestionFields('edit', type);
+            form.querySelector('#editQuestionTypeInput').value = qType;
+            form.querySelector('#editQuestionTextInput').value = q.question;
             
-            document.getElementById('editQuestionTextInput').value = q.question;
-            
-            if (type === 'single') {
-                const list = document.getElementById('edit-options-single-list');
-                list.innerHTML = '';
-                q.options.forEach((opt, i) => addOption('edit-options-single-list', 'single', { text: opt, correct: i == q.correctAnswer }));
-            } else if (type === 'multiple') {
-                const list = document.getElementById('edit-options-multiple-list');
-                list.innerHTML = '';
-                q.options.forEach((opt, i) => addOption('edit-options-multiple-list', 'multiple', { text: opt, correct: (q.correctAnswer || []).includes(i) }));
-            } else if (type === 'truefalse') {
-                document.getElementById('editAnswerTrueFalse').value = q.correctAnswer;
-            } else if (type === 'fill') {
-                document.getElementById('editAnswerFill').value = q.correctAnswer;
+            // Populate dynamic fields
+            switch(qType) {
+                case 'single':
+                    const sList = form.querySelector('#edit-options-single-list');
+                    sList.innerHTML = '';
+                    q.options.forEach((opt, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'option-input-group';
+                        div.innerHTML = `
+                            <input type="radio" name="editCorrectAnswer" value="${i}" ${i == q.correctAnswer ? 'checked' : ''} required>
+                            <input type="text" class="form-control" value="${opt}" required>
+                            <button type="button" class="btn-remove-option" title="Remove option"><i class="fas fa-times"></i></button>
+                        `;
+                        div.querySelector('.btn-remove-option').addEventListener('click', () => div.remove());
+                        sList.appendChild(div);
+                    });
+                    break;
+                case 'multiple':
+                     const mList = form.querySelector('#edit-options-multiple-list');
+                    mList.innerHTML = '';
+                    q.options.forEach((opt, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'option-input-group';
+                        const isChecked = (String(q.correctAnswer[i]).toLowerCase() === 'true');
+                        div.innerHTML = `
+                            <input type="checkbox" name="editCorrectAnswerMultiple" value="${i}" ${isChecked ? 'checked' : ''}>
+                            <input type="text" class="form-control" value="${opt}" required>
+                            <button type="button" class="btn-remove-option" title="Remove option"><i class="fas fa-times"></i></button>
+                        `;
+                        div.querySelector('.btn-remove-option').addEventListener('click', () => div.remove());
+                        mList.appendChild(div);
+                    });
+                    break;
+                case 'truefalse':
+                    form.querySelector('#editAnswerTrueFalse').value = String(q.correctAnswer).toLowerCase();
+                    break;
+                case 'fill':
+                    form.querySelector('#editAnswerFill').value = q.correctAnswer;
+                    break;
+                case 'essay':
+                    break;
             }
             
+            toggleQuestionFields(qType, 'edit');
             editQuestionModal.style.display = 'flex';
         }
         
-        // --- NEW: Handle Update Question (Updated) ---
         function handleUpdateQuestion(e) {
             e.preventDefault();
-            const type = document.getElementById('editQuestionTypeInput').value;
+            const form = e.target;
+            const type = form.querySelector('#editQuestionTypeInput').value;
             const q = {
                 type: type,
-                question: document.getElementById('editQuestionTextInput').value,
-                options: [],
-                correctAnswer: null
+                question: form.querySelector('#editQuestionTextInput').value,
             };
 
-            if (type === 'single') {
-                const optionsList = document.getElementById('edit-options-single-list');
-                const correctInput = editQuestionForm.querySelector('input[name="editCorrectAnswer"]:checked');
-                if (!correctInput) {
-                    showToast("Please select a correct answer.", "error"); return;
-                }
-                q.correctAnswer = parseInt(correctInput.value);
-                optionsList.querySelectorAll('input[type="text"]').forEach(input => q.options.push(input.value));
-                
-            } else if (type === 'multiple') {
-                const optionsList = document.getElementById('edit-options-multiple-list');
-                q.correctAnswer = [];
-                optionsList.querySelectorAll('.option-input-group').forEach((group, i) => {
-                    q.options.push(group.querySelector('input[type="text"]').value);
-                    if (group.querySelector('input[type="checkbox"]').checked) {
-                        q.correctAnswer.push(i);
+            switch(type) {
+                case 'single':
+                    const correctSingle = form.querySelector('input[name="editCorrectAnswer"]:checked');
+                    if (!correctSingle) {
+                        showToast("Please select a correct answer.", "error"); return;
                     }
-                });
-                
-            } else if (type === 'truefalse') {
-                q.correctAnswer = document.getElementById('editAnswerTrueFalse').value;
-            } else if (type === 'fill') {
-                q.correctAnswer = document.getElementById('editAnswerFill').value;
-            } else if (type === 'essay') {
-                q.correctAnswer = null; // Manual grade
+                    q.options = Array.from(form.querySelectorAll('#edit-options-single-list input[type="text"]')).map(inp => inp.value);
+                    q.correctAnswer = parseInt(correctSingle.value);
+                    break;
+                case 'multiple':
+                    q.options = Array.from(form.querySelectorAll('#edit-options-multiple-list input[type="text"]')).map(inp => inp.value);
+                    q.correctAnswer = Array.from(form.querySelectorAll('#edit-options-multiple-list input[type="checkbox"]')).map(cb => cb.checked);
+                    if (q.correctAnswer.every(val => val === false)) {
+                         showToast("Please select at least one correct answer.", "error"); return;
+                    }
+                    break;
+                case 'truefalse':
+                    q.correctAnswer = form.querySelector('#editAnswerTrueFalse').value;
+                    break;
+                case 'fill':
+                    q.correctAnswer = form.querySelector('#editAnswerFill').value;
+                    break;
+                case 'essay':
+                    q.correctAnswer = null;
+                    break;
             }
             
             state.db.updateQuestionInExam(state.editingExamId, state.editingQuestionIndex, q);
@@ -4073,22 +4165,20 @@
         }
         
         // --- NEW: Class Management Functions ---
-        function renderClassManagementTable(forceRedraw = false) {
-            if (state.currentPage !== 'classes' && !forceRedraw) return;
-            
-            const isExpanded = manageClassListContainer.classList.contains('expanded');
+        function renderClassManagementTable() {
             manageClassesTableBody.innerHTML = '';
-            
             const classes = state.db.getClasses();
+            const isExpanded = manageClassListContainer.classList.contains('expanded');
             const classesToShow = isExpanded ? classes : classes.slice(0, 3);
-            
-            showAllManageClassesBtn.style.display = (classes.length > 3) ? 'flex' : 'none';
 
             if (classes.length === 0) {
                 manageClassesTableBody.innerHTML = `<tr class="empty-state-row"><td colspan="5"><i class="fas fa-chalkboard"></i>No classes created.</td></tr>`;
+                showAllManageClassesBtn.style.display = 'none';
                 return;
             }
-
+            
+            showAllManageClassesBtn.style.display = (classes.length > 3) ? 'flex' : 'none';
+            
             classesToShow.forEach(cls => {
                 const row = document.createElement('tr');
                 const actionButtons = `
@@ -4098,14 +4188,13 @@
                             <button class="action-btn manage-students" data-id="${cls.id}"><i class="fas fa-users"></i> Manage Students</button>
                             <button class="action-btn assign-exam" data-id="${cls.id}"><i class="fas fa-file-alt"></i> Assign Exam</button>
                             <button class="action-btn edit-class" data-id="${cls.id}"><i class="fas fa-edit"></i> Edit Class</button>
-                            <button class="action-btn delete-class" data-id="${cls.id}"><i class="fas fa-trash"></i> Delete Class</button>
+                            <button class="action-btn delete-class delete-result" data-id="${cls.id}"><i class="fas fa-trash"></i> Delete Class</button>
                         </div>
                     </div>
                 `;
-                
                 row.innerHTML = `
                     <td data-label="Class Name">${cls.name}</td>
-                    <td data-label="Teacher">${cls.teacherName}</td>
+                    <td data-label="Teacher">${cls.teacher}</td>
                     <td data-label="Students">${cls.students.length}</td>
                     <td data-label="Exams">${cls.exams.length}</td>
                     <td data-label="Actions" class="admin-action-cell">${actionButtons}</td>
@@ -4119,9 +4208,8 @@
             if(!btn || btn.classList.contains('mobile-menu-trigger')) return;
             
             const classId = parseInt(btn.dataset.id);
-            
             if (btn.classList.contains('edit-class')) {
-                openCreateClassModal(classId); // Reuse modal for editing
+                openCreateClassModal(classId);
             } else if (btn.classList.contains('delete-class')) {
                 showConfirmation("Delete Class?", "Are you sure you want to delete this class? This cannot be undone.", () => {
                     state.db.deleteClass(classId);
@@ -4134,50 +4222,44 @@
                 openAssignExamModal(classId);
             }
         }
-
+        
         function openCreateClassModal(classId = null) {
-            classForm.reset();
-            const title = document.getElementById('classModalTitle');
-            const classIdInput = document.getElementById('classModalId');
-            const nameInput = document.getElementById('classNameInput');
-            const teacherInput = document.getElementById('classTeacherInput');
-            
-            if (classId) {
-                // Edit Mode
-                const cls = state.db.findClassById(classId);
-                if (!cls) return;
-                title.textContent = "Edit Class";
-                classIdInput.value = cls.id;
-                nameInput.value = cls.name;
-                teacherInput.value = cls.teacherName;
-                state.editingClassId = classId;
-            } else {
-                // Create Mode
-                title.textContent = "Create New Class";
-                classIdInput.value = '';
-                teacherInput.value = ''; // MODIFIED: Clear text input
-                state.editingClassId = null;
-            }
-            
-            classModal.style.display = 'flex';
+            performAdminAction(() => {
+                const isEditing = classId !== null;
+                state.editingClassId = isEditing ? classId : null;
+                
+                document.getElementById('classModalTitle').textContent = isEditing ? "Edit Class" : "Create New Class";
+                
+                if (isEditing) {
+                    const cls = state.db.findClassById(classId);
+                    document.getElementById('classNameInput').value = cls.name;
+                    document.getElementById('classTeacherInput').value = cls.teacher;
+                    document.getElementById('classModalId').value = cls.id;
+                } else {
+                    classForm.reset();
+                    document.getElementById('classModalId').value = '';
+                }
+                
+                classModal.style.display = 'flex';
+            });
         }
         
         function handleSaveClass(e) {
             e.preventDefault();
+            const classId = document.getElementById('classModalId').value;
             const classData = {
                 name: document.getElementById('classNameInput').value,
-                teacherName: document.getElementById('classTeacherInput').value,
-                teacherId: null // In a real app, you'd link this
+                teacher: document.getElementById('classTeacherInput').value,
             };
             
-            if (state.editingClassId) {
-                // Update
-                state.db.updateClass(state.editingClassId, classData);
-                showToast("Class updated!", "success");
+            if (classId) {
+                // Update existing class
+                state.db.updateClass(parseInt(classId), classData);
+                showToast("Class updated successfully.", "success");
             } else {
-                // Create
+                // Create new class
                 state.db.createClass(classData);
-                showToast("Class created!", "success");
+                showToast("Class created successfully.", "success");
             }
             
             classModal.style.display = 'none';
@@ -4188,10 +4270,11 @@
             const cls = state.db.findClassById(classId);
             if (!cls) return;
             
-            document.getElementById('manageStudentsClassId').value = classId;
+            state.editingClassId = classId;
             document.getElementById('manageStudentsTitle').textContent = `Manage Students: ${cls.name}`;
+            document.getElementById('manageStudentsClassId').value = classId;
             
-            // Populate current roster
+            // Populate student roster
             const rosterList = document.getElementById('currentStudentList');
             rosterList.innerHTML = '';
             if (cls.students.length === 0) {
@@ -4204,80 +4287,84 @@
                         li.className = 'student-list-item';
                         li.innerHTML = `
                             <span>${student.name}</span>
-                            <button class="btn-icon danger remove-student" data-id="${student.id}"><i class="fas fa-times"></i></button>
+                            <button class="btn-icon danger remove-student-btn" data-id="${student.id}"><i class="fas fa-times"></i></button>
                         `;
-                        li.querySelector('.remove-student').onclick = () => {
-                            state.db.removeStudentFromClass(classId, studentId);
-                            openManageStudentsModal(classId); // Refresh modal
-                            renderClassManagementTable(); // Update count on main page
-                        };
+                        li.querySelector('.remove-student-btn').addEventListener('click', () => {
+                            state.db.removeStudentFromClass(classId, student.id);
+                            openManageStudentsModal(classId); // Refresh list
+                        });
                         rosterList.appendChild(li);
                     }
                 });
             }
             
-            // Populate student dropdown (all students not already in class)
-            const addStudentSelect = document.getElementById('addStudentSelect');
-            addStudentSelect.innerHTML = '<option value="">Select a Student...</option>';
-            state.db.users
-                .filter(u => u.role === 'student' && !cls.students.includes(u.id))
-                .forEach(student => {
-                    addStudentSelect.innerHTML += `<option value="${student.id}">${student.name}</option>`;
-                });
+            // Populate "Add Student" dropdown
+            const addSelect = document.getElementById('addStudentSelect');
+            addSelect.innerHTML = '<option value="">Select a Student...</option>';
+            const allStudents = state.db.users.filter(u => u.role === 'student');
+            allStudents.forEach(student => {
+                // Only show students who are NOT already in the class
+                if (!cls.students.includes(student.id)) {
+                    addSelect.innerHTML += `<option value="${student.id}">${student.name}</option>`;
+                }
+            });
             
             manageStudentsModal.style.display = 'flex';
         }
         
         function handleAddStudentToClass() {
-            const classId = parseInt(document.getElementById('manageStudentsClassId').value);
+            const classId = state.editingClassId;
             const studentId = parseInt(document.getElementById('addStudentSelect').value);
             
-            if (!studentId) {
+            if (!classId || !studentId) {
                 showToast("Please select a student.", "error");
                 return;
             }
             
             state.db.addStudentToClass(classId, studentId);
             openManageStudentsModal(classId); // Refresh modal
-            renderClassManagementTable(); // Update count on main page
         }
         
         function openAssignExamModal(classId) {
             const cls = state.db.findClassById(classId);
             if (!cls) return;
             
-            document.getElementById('assignExamClassId').value = classId;
+            state.editingClassId = classId;
             document.getElementById('assignExamTitle').textContent = `Assign Exam to: ${cls.name}`;
+            document.getElementById('assignExamClassId').value = classId;
             
-            const assignExamSelect = document.getElementById('assignExamSelect');
-            assignExamSelect.innerHTML = '<option value="">Select an Approved Exam...</option>';
-            
-            state.db.exams
-                .filter(ex => ex.status === 'approved' && !cls.exams.includes(ex.id))
-                .forEach(exam => {
-                    assignExamSelect.innerHTML += `<option value="${exam.id}">${exam.title}</option>`;
-                });
+            // Populate "Assign Exam" dropdown
+            const assignSelect = document.getElementById('assignExamSelect');
+            assignSelect.innerHTML = '<option value="">Select an Approved Exam...</option>';
+            const allExams = state.db.exams.filter(e => e.status === 'approved');
+            allExams.forEach(exam => {
+                // Only show exams not already assigned
+                if (!cls.exams.includes(exam.id)) {
+                    assignSelect.innerHTML += `<option value="${exam.id}">${exam.title} (${exam.examCode})</option>`;
+                }
+            });
             
             assignExamModal.style.display = 'flex';
         }
         
         function handleAssignExamToClass() {
-            const classId = parseInt(document.getElementById('assignExamClassId').value);
+            const classId = state.editingClassId;
             const examId = parseInt(document.getElementById('assignExamSelect').value);
             
-            if (!examId) {
+             if (!classId || !examId) {
                 showToast("Please select an exam.", "error");
                 return;
             }
             
             state.db.assignExamToClass(classId, examId);
+            renderClassManagementTable(); // Refresh table
             assignExamModal.style.display = 'none';
-            renderClassManagementTable(); // Update exam count
-            showToast("Exam assigned to class!", "success");
+            showToast("Exam assigned to class.", "success");
         }
 
 
-        // MODIFIED: More reliable startup
+        // --- Start App ---
+        // MODIFIED: Use more robust load listener
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
