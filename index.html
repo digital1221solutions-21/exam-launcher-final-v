@@ -24,6 +24,7 @@
             --admin: #3498db;
             --teacher: #9b59b6;
             --student: #2ecc71;
+            --parent: #e67e22; /* NEW: Parent color */
         }
 
         * {
@@ -417,6 +418,7 @@
         .role-admin { background: var(--admin); }
         .role-teacher { background: var(--teacher); }
         .role-student { background: var(--student); }
+        .role-parent { background: var(--parent); } /* NEW: Parent badge */
 
         .nav-menu {
             list-style: none;
@@ -524,6 +526,7 @@
 
         .stat-card.teacher { border-left-color: var(--teacher); }
         .stat-card.student { border-left-color: var(--student); }
+        .stat-card.parent { border-left-color: var(--parent); } /* NEW: Parent stat card */
 
         .stat-value {
             font-size: 2rem;
@@ -1228,7 +1231,7 @@
             .content-header { 
                 margin-bottom: 20px; 
                 flex-direction: column; 
-                align-items: flex-start;
+                align-items: flex-start; 
                 gap: 10px;
             }
             .content-header h2 {
@@ -1392,6 +1395,7 @@
                         <option value="student">Student</option>
                         <option value="teacher">Teacher</option>
                         <option value="admin">Admin</option>
+                        <option value="parent">Parent</option> <!-- NEW: Added Parent option -->
                     </select>
                 </div>
                 <button type="submit" class="btn" id="registerButton">
@@ -1465,6 +1469,11 @@
                             <div class="stat-card student clickable" data-page="users" data-filter="student">
                                 <div class="stat-value" id="totalStudents">0</div>
                                 <div class="stat-label">Students</div>
+                            </div>
+                            <!-- NEW: Parent stat card -->
+                            <div class="stat-card parent clickable" data-page="users" data-filter="parent">
+                                <div class="stat-value" id="totalParents">0</div>
+                                <div class="stat-label">Parents</div>
                             </div>
                             <div class="stat-card clickable" data-page="exams">
                                 <div class="stat-value" id="totalExams">0</div>
@@ -1936,6 +1945,7 @@
                         <option value="student">Student</option>
                         <option value="teacher">Teacher</option>
                         <option value="admin">Admin</option>
+                        <option value="parent">Parent</option> <!-- NEW: Added Parent option -->
                     </select>
                 </div>
                 <button type="submit" class="btn" style="width: 100%;">Save Changes</button>
@@ -2198,7 +2208,8 @@
                     { id: 2, name: 'Teacher One (Old)', email: 'teacher@examsystem.com', password: 'teacher123', role: 'teacher', status: 'active', joinedDate: twoYearsAgo },
                     { id: 3, name: 'Student One', email: 'student@examsystem.com', password: 'student123', role: 'student', status: 'active', joinedDate: oneYearAgo },
                     { id: 4, name: 'Teacher Two (New)', email: 'teacher2@examsystem.com', password: 'teacher123', role: 'teacher', status: 'active', joinedDate: new Date() },
-                    { id: 5, name: 'Student Two', email: 'student2@examsystem.com', password: 'student123', role: 'student', status: 'active', joinedDate: new Date() }
+                    { id: 5, name: 'Student Two', email: 'student2@examsystem.com', password: 'student123', role: 'student', status: 'active', joinedDate: new Date() },
+                    { id: 6, name: 'Parent One', email: 'parent@examsystem.com', password: 'parent123', role: 'parent', status: 'active', joinedDate: new Date() } // NEW: Added parent user
                 ];
                 
                 this.exams = [
@@ -2316,9 +2327,9 @@
             updateExam(examId, updates) {
                  const exam = this.findExamById(examId);
                  if (exam) {
-                     Object.assign(exam, updates);
-                     this.saveToStorage();
-                     return exam;
+                      Object.assign(exam, updates);
+                      this.saveToStorage();
+                      return exam;
                  }
                  return null;
             }
@@ -3342,17 +3353,23 @@
                 
                 const roleBadge = document.getElementById('userRoleBadge');
                 roleBadge.textContent = state.currentUser.role.toUpperCase();
-                roleBadge.className = `role-badge role-${state.currentUser.role}`;
+                // NEW: Add parent role badge
+                if (state.currentUser.role === 'parent') {
+                    roleBadge.className = `role-badge role-parent`;
+                } else {
+                    roleBadge.className = `role-badge role-${state.currentUser.role}`;
+                }
                 
                 const isAdmin = state.currentUser.role === 'admin';
                 const isStudent = state.currentUser.role === 'student';
+                const isParent = state.currentUser.role === 'parent'; // NEW
                 
                 // NEW: Toggle admin class on body
                 document.body.classList.toggle('is-admin', isAdmin);
                 
-                document.querySelector('.nav-link[data-page="users"]').style.display = isStudent ? 'none' : 'flex';
-                document.querySelector('.nav-link[data-page="exams"]').style.display = isStudent ? 'none' : 'flex';
-                document.querySelector('.nav-link[data-page="takeExam"]').style.display = isStudent ? 'flex' : 'none';
+                document.querySelector('.nav-link[data-page="users"]').style.display = (isStudent || isParent) ? 'none' : 'flex';
+                document.querySelector('.nav-link[data-page="exams"]').style.display = (isStudent || isParent) ? 'none' : 'flex';
+                document.querySelector('.nav-link[data-page="takeExam"]').style.display = (isStudent || isParent) ? 'flex' : 'none';
                 
                 updateStats(); 
                 updateTables();
@@ -3378,6 +3395,8 @@
             document.getElementById('totalUsers').textContent = state.db.users.length;
             document.getElementById('totalTeachers').textContent = state.db.users.filter(u => u.role === 'teacher').length;
             document.getElementById('totalStudents').textContent = state.db.users.filter(u => u.role === 'student').length;
+            // NEW: Count parents
+            document.getElementById('totalParents').textContent = state.db.users.filter(u => u.role === 'parent').length;
             document.getElementById('totalExams').textContent = state.db.exams.length;
             document.getElementById('completedExams').textContent = state.db.results.filter(r => r.status === 'active').length;
         }
@@ -3523,6 +3542,7 @@
             
             if (state.userFilter === 'teacher') { filteredUsers = state.db.users.filter(u => u.role === 'teacher'); titleText += ": Teachers"; }
             else if (state.userFilter === 'student') { filteredUsers = state.db.users.filter(u => u.role === 'student'); titleText += ": Students"; }
+            else if (state.userFilter === 'parent') { filteredUsers = state.db.users.filter(u => u.role === 'parent'); titleText += ": Parents"; } // NEW: Parent filter
             else { titleText += ": All Users"; }
             
             usersPageTitle.textContent = titleText;
@@ -3764,8 +3784,8 @@
                 const q = state.currentExam.questions[i];
                 const qType = q.type || 'single';
                 
-                // MODIFIED: Fix for type-insensitive comparison
-                const normalize = (val) => (val_unused) => val === null || val === undefined ? null : String(val).toLowerCase();
+                // MODIFIED: Fix for type-insensitive comparison (Removed the extra function wrapping)
+                const normalize = (val) => val === null || val === undefined ? null : String(val).toLowerCase();
                 const userAnswerNorm = normalize(userAnswer);
                 const correctAnswerNorm = normalize(q.correctAnswer);
 
