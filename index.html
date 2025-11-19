@@ -4391,5 +4391,59 @@
             init(); // Already loaded
         }
     </script>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBXQNKWcLtmYeBBRv6Qtgx1R1wo-1Tk58E",
+  authDomain: "awa-exam-app.firebaseapp.com",
+  projectId: "awa-exam-app",
+  storageBucket: "awa-exam-app.firebasestorage.app",
+  messagingSenderId: "53757050328",
+  appId: "1:53757050328:web:c15769214d889836f186ad",
+  measurementId: "G-9NZTJK4KXD"
+};
+
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// 1. GET THE DATABASE SERVICE (Add this line if you don't have it)
+// import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const db = getFirestore(app);
+
+// 2. FUNCTION TO FETCH QUESTIONS
+async function getQuestions() {
+  console.log("Attempting to fetch questions..."); // This tells us the code is starting
+  
+  try {
+    const querySnapshot = await getDocs(collection(db, "questions"));
+    
+    // Check if the collection is empty
+    if (querySnapshot.empty) {
+      console.log("No documents found! Check your collection name.");
+    }
+
+    querySnapshot.forEach((doc) => {
+      // THIS is the line that prints your data
+      console.log(doc.id, " => ", doc.data());
+    });
+    
+  } catch (error) {
+    console.error("Error fetching documents: ", error); // This catches permission errors
+  }
+}
+
+// 3. RUN THE FUNCTION
+getQuestions();
+</script>
+
 </body>
 </html>
