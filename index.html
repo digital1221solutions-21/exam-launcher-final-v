@@ -1338,6 +1338,16 @@
     </style>
 </head>
 <body>
+
+    <div id="login-section" style="text-align: center; margin-top: 100px;">
+    <h2>Please log in to access the Dashboard</h2>
+    <button id="login-btn" style="padding: 15px 30px; background-color: #4285F4; color: white; border: none; font-size: 16px; cursor: pointer;">
+        Sign in with Google
+    </button>
+</div>
+
+<div id="quiz-container" style="display: none;">
+    </div>
     <div class="overlay" id="overlay"></div>
 
     <!-- Authentication Screen -->
@@ -2312,7 +2322,8 @@
                 return code;
             }
             
-            createExam(examData) {
+          // 🔥 MODIFIED: Now saves to Firebase + Local Storage
+            async createExam(examData) {
                 const newExam = { 
                     id: Date.now(), 
                     examCode: this.generateExamCode(),
@@ -2320,10 +2331,22 @@
                     ...examData, 
                     questions: examData.questions || [] 
                 };
+                
+                // 1. Save Locally (Keep this so the app feels fast)
                 this.exams.push(newExam);
                 this.saveToStorage();
+
+                // 2. Save to Firebase Cloud ☁️
+                    try {
+                        // Use window.addDoc and window.collection to be 100% sure
+                        await window.addDoc(window.collection(window.db, "questions"), newExam);
+                        console.log(`✅ SUCCESS: Saved ${newExam.title} to Cloud.`);
+                    } catch (e) {
+                        console.error("🔥 FIREBASE ERROR:", e);
+                    }
                 return newExam;
             }
+
             updateExam(examId, updates) {
                  const exam = this.findExamById(examId);
                  if (exam) {
@@ -2333,7 +2356,8 @@
                  }
                  return null;
             }
-            deleteExam(examId) { // NEW
+
+            deleteExam(examId) { 
                 this.exams = this.exams.filter(e => e.id !== examId);
                 // Also delete associated results
                 this.results = this.results.filter(r => r.examId !== examId);
@@ -2343,23 +2367,28 @@
                 });
                 this.saveToStorage();
             }
+
             updateExamStatus(examId, status) {
                 const exam = this.findExamById(examId);
                 if (exam) { exam.status = status; this.saveToStorage(); return exam; }
                 return null;
             }
+
             addQuestionToExam(examId, questionData) {
                 const exam = this.findExamById(examId);
                 if (exam) { exam.questions.push(questionData); this.saveToStorage(); }
             }
+
             deleteQuestionFromExam(examId, questionIndex) {
                 const exam = this.findExamById(examId);
                 if (exam && exam.questions[questionIndex]) { exam.questions.splice(questionIndex, 1); this.saveToStorage(); }
             }
+
             updateQuestionInExam(examId, questionIndex, questionData) {
                 const exam = this.findExamById(examId);
                 if (exam && exam.questions[questionIndex]) { exam.questions[questionIndex] = questionData; this.saveToStorage(); }
             }
+
             addResourceToExam(examId, resource) {
                 const exam = this.findExamById(examId);
                 if(exam) {
@@ -2369,22 +2398,56 @@
                 }
             }
             
-            // MODIFIED: Accept importingUser
-            bulkImportExams(examsArray, importingUser) {
-                examsArray.forEach(ex => {
+            // 🔥 MODIFIED: Bulk Upload now sends to Firebase
+           // 🔥 DEBUG VERSION: Prints everything to console
+            async bulkImportExams(examsArray, importingUser) {
+                console.log("🚀 STARTING IMPORT...");
+                console.log("📦 Data received:", examsArray); // <--- SPY ON THE DATA
+
+                if (!examsArray || examsArray.length === 0) {
+                    console.error("❌ ERROR: The array is empty! Check your JSON file format.");
+                    alert("Error: No exams found in file.");
+                    return;
+                }
+
+                // Make sure DB is connected
+                if (!window.db) {
+                     console.warn("⚠️ WARNING: window.db is not set. Trying to use global 'db'...");
+                     if (typeof db !== 'undefined') window.db = db;
+                }
+
+                for (const ex of examsArray) {
+                    console.log(`Processing exam: ${ex.title || "Untitled"}`); // <--- Log each item
+
                     const newExam = { 
                         ...ex, 
                         id: Date.now() + Math.floor(Math.random() * 1000), 
-                        examCode: this.generateExamCode(), // Assign unique code
+                        examCode: this.generateExamCode(), 
                         status: 'approved',
-                        teacher: importingUser.name, // NEW: Assign current user
-                        teacherId: importingUser.id  // NEW: Assign current user ID
+                        teacher: importingUser.name, 
+                        teacherId: importingUser.id  
                     };
+                    
+                    // 1. Save Locally
                     this.exams.push(newExam);
-                });
+
+                    // 2. Save to Firebase Cloud ☁️
+                    try {
+                        // Check if addDoc exists
+                        if (typeof addDoc === 'undefined') {
+                            throw new Error("addDoc is missing! Check imports.");
+                        }
+                        
+                        await addDoc(collection(window.db, "questions"), newExam);
+                        console.log(`✅ SUCCESS: Saved to Cloud.`);
+                    } catch (e) {
+                        console.error("🔥 FIREBASE ERROR:", e); // <--- PRINT THE REAL ERROR
+                    }
+                }
+                
                 this.saveToStorage();
+                alert(`Import Attempt Finished. Check Console for details.`);
             }
-            
             saveResult(resultData) {
                 const newResult = { id: Date.now(), ...resultData, date: new Date().toLocaleString(), status: 'active' };
                 this.results.push(newResult);
@@ -3402,7 +3465,7 @@
         }
 
         // MODIFIED: Added forceRedraw param
-        function updateTables(forceRedraw = false) {
+        function updateTables(forceRedraw = false) { return;
             // Only redraw if the page is active or forced
             if (state.currentPage === 'dashboard' || forceRedraw) {
                 renderDashboardPendingTable();
@@ -4391,51 +4454,84 @@
             init(); // Already loaded
         }
     </script>
-
+<!-- ***************************************************************************************************** -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyBXQNKWcLtmYeBBRv6Qtgx1R1wo-1Tk58E",
+  // --- IMPORTS ---
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// 2. MAKE TOOLS GLOBAL (The Bulletproof Fix) 🛡️
+window.addDoc = addDoc;
+window.collection = collection;
+window.getDocs = getDocs;
+
+
+  // --- CONFIGURATION ---
+  const firebaseConfig = {
+      apiKey: "AIzaSyBXQNKWcLtmYeBBRv6Qtgx1R1wo-1Tk58E",
   authDomain: "awa-exam-app.firebaseapp.com",
   projectId: "awa-exam-app",
   storageBucket: "awa-exam-app.firebasestorage.app",
   messagingSenderId: "53757050328",
   appId: "1:53757050328:web:c15769214d889836f186ad",
   measurementId: "G-9NZTJK4KXD"
-};
+  };
 
+  // --- INITIALIZE ---
+  const app = initializeApp(firebaseConfig);
+ // Make db global
+window.db = getFirestore(app);
+const db = window.db;
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-// 1. GET THE DATABASE SERVICE (Add this line if you don't have it)
-// import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const db = getFirestore(app);
+  // --- DOM ELEMENTS ---
+  const loginBtn = document.getElementById("login-btn");
+  const loginSection = document.getElementById("login-section");
+  const quizContainer = document.getElementById("quiz-container");
 
-// 2. FUNCTION TO FETCH QUESTIONS
-async function getQuestions() {
-  console.log("Attempting to fetch questions..."); // This tells us the code is starting
-  
-  try {
+  // --- LOGIN BUTTON CLICK ---
+  loginBtn.addEventListener("click", () => {
+      signInWithPopup(auth, provider)
+        .catch((error) => alert("Login failed: " + error.message));
+  });
+
+  // --- CHECK LOGIN STATUS ---
+  onAuthStateChanged(auth, (user) => {
+      if (user) {
+          // If logged in: Hide login button, Show quiz, Load questions
+          console.log("User is logged in:", user.email);
+          loginSection.style.display = "none";
+          quizContainer.style.display = "block";
+          loadQuestions();
+      } else {
+          // If logged out: Show login button, Hide quiz
+          loginSection.style.display = "block";
+          quizContainer.style.display = "none";
+      }
+  });
+
+  // --- LOAD QUESTIONS FUNCTION ---
+  async function loadQuestions() {
+    if(quizContainer.innerHTML !== "") return; // Don't load twice
+
     const querySnapshot = await getDocs(collection(db, "questions"));
     
-    // Check if the collection is empty
-    if (querySnapshot.empty) {
-      console.log("No documents found! Check your collection name.");
-    }
-
     querySnapshot.forEach((doc) => {
-      // THIS is the line that prints your data
-      console.log(doc.id, " => ", doc.data());
+      const data = doc.data();
+      const htmlContent = `
+        <div style="border: 1px solid #ccc; margin: 10px; padding: 15px; border-radius: 8px;">
+            <h3 style="color: blue;">${data.question}</h3>
+            <label><input type="radio" name="${doc.id}" value="A"> A: ${data.choiceA}</label><br>
+            <label><input type="radio" name="${doc.id}" value="B"> B: ${data.choiceB}</label><br>
+            <label><input type="radio" name="${doc.id}" value="C"> C: ${data.choiceC}</label><br>
+        </div>
+      `;
+      quizContainer.innerHTML += htmlContent;
     });
-    
-  } catch (error) {
-    console.error("Error fetching documents: ", error); // This catches permission errors
   }
-}
-
-// 3. RUN THE FUNCTION
-getQuestions();
+</script>
 </script>
 
 </body>
