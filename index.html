@@ -1272,6 +1272,7 @@
         .hidden { display: none !important; }
     </style>
 </head>
+<!-- part -1 start here and below xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 <body>
 
     <div id="login-section" class="hidden" style="text-align: center; margin-top: 100px;">
@@ -1354,7 +1355,7 @@
 
     <!-- Main Application -->
     <div id="appScreen" class="hidden">
-        <div class="container">
+        <div class="container"> 
             <header>
                 <div class="header-left">
                     <button class="btn-icon mobile-nav-toggle" id="mobileNavToggle"><i class="fas fa-bars"></i></button>
@@ -1514,7 +1515,7 @@
                             </div>
                         </div>
                     </div>
-                    
+                    <!--Part -2  UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU-->
                     <!-- NEW MANUAL EXAM PAGE (MATCHING SCREENSHOT) -->
                     <div id="examEditorPage" class="page-content hidden" style="background: transparent; box-shadow: none; padding: 0;">
                         
@@ -1896,7 +1897,7 @@
             </div>
         </div>
     </div>
-    
+    <!-- part -2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
     <div class="modal" id="assignExamModal" data-close="true">
         <div class="modal-content">
             <div class="modal-header">
@@ -2196,8 +2197,9 @@
             showAllManageUsersBtn = document.getElementById('showAllManageUsersBtn');
             showAllManageExamsBtn = document.getElementById('showAllManageExamsBtn');
             saveAndExitExamBtn = document.getElementById('saveAndExitExamBtn');
+   
             manageExamListContainer = document.getElementById('manageExamListContainer');
-
+           
             createClassBtn = document.getElementById('createClassBtn');
             classesPage = document.getElementById('classesPage');
             manageClassesTableBody = document.getElementById('manageClassesTable').querySelector('tbody');
@@ -2207,7 +2209,7 @@
             assignExamModal = document.getElementById('assignExamModal');
             manageClassListContainer = document.getElementById('manageClassListContainer');
             showAllManageClassesBtn = document.getElementById('showAllManageClassesBtn');
-
+              
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 state.currentUser = JSON.parse(savedUser);
@@ -2297,10 +2299,51 @@
             
             backToDashboardBtn.addEventListener('click', handleBackToDashboard); 
             examDoneBtn.addEventListener('click', handleBackToDashboard); 
-            saveAndExitExamBtn.addEventListener('click', handleBackToDashboard);
+
+async function saveExamAndExit() {
+    // Ensure exam ID exists
+    const examId = state.editingExamId;
+    if (!examId) {
+        showToast("No exam is being edited.", "error");
+        return;
+    }
+
+    // Get the exam object directly from MockDB (this contains questions!)
+    const exam = state.db.findExamById(examId);
+    if (!exam) {
+        showToast("Exam not found in local database.", "error");
+        return;
+    }
+
+    // Build Firestore-ready object
+    const firestoreExam = {
+        title: exam.title || "",
+        subject: exam.subject || "",
+        duration: exam.duration || 0,
+        teacher: exam.teacher || "",
+        questions: exam.questions || [],
+        createdAt: new Date()
+    };
+
+    // Save to Firestore
+    try {
+        await addDoc(collection(db, "exams"), firestoreExam);
+        showToast("Exam saved to Firestore!", "success");
+    } catch (error) {
+        console.error("Error saving exam:", error);
+        showToast("Error saving to Firestore. Check console.", "error");
+    }
+
+    // Return to dashboard
+    handleBackToDashboard();
+    
+}
+    saveAndExitExamBtn.addEventListener('click', saveExamAndExit);
+
+
             
-            document.querySelectorAll('.back-to-dashboard-btn').forEach(btn => {
-                btn.addEventListener('click', handleBackToDashboard); 
+    document.querySelectorAll('.back-to-dashboard-btn').forEach(btn => {
+     btn.addEventListener('click', handleBackToDashboard); 
             });
             editorBackToDashboardBtn.addEventListener('click', handleBackToDashboard);
 
@@ -2552,7 +2595,7 @@
             }
             navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === page));
         }
-        
+        // part -3   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         function handleBackToDashboard() {
             if (state.examTimer) clearInterval(state.examTimer);
             state.currentExam = null;
@@ -2694,27 +2737,63 @@
             showToast("User updated successfully.", "success");
         }
 
-        function handleBulkUpload(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const exams = JSON.parse(event.target.result);
-                    if(Array.isArray(exams)) {
-                        exams.forEach(ex => state.db.createExam({ ...ex, status: 'approved', teacher: state.currentUser.name }));
-                        showToast(`Bulk upload successful! ${exams.length} exams added.`, "success");
-                        renderExamManagementTable();
-                        updateTables(); 
-                        updateStats();
-                    } else { showToast("Invalid JSON format. Expected an array.", "error"); }
-                } catch(err) { 
-                    showToast("Error parsing JSON file.", "error"); 
-                }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
+       async function handleBulkUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = async function (event) {
+        try {
+            const exams = JSON.parse(event.target.result);
+
+            if (!Array.isArray(exams)) {
+                showToast("Invalid JSON format. Expected an array of exams.", "error");
+                return;
+            }
+
+            let successCount = 0;
+
+            for (const ex of exams) {
+                // 1️⃣ Save into local mock DB (so UI sees them)
+                const newLocalExam = state.db.createExam({
+                    ...ex,
+                    status: "approved",
+                    teacher: state.currentUser ? state.currentUser.name : "Bulk Import",
+                    teacherId: state.currentUser ? state.currentUser.id : null
+                });
+
+                // 2️⃣ Prepare Firestore exam object
+                const firestoreExam = {
+                    title: newLocalExam.title || "",
+                    subject: newLocalExam.subject || "",
+                    duration: newLocalExam.duration || 0,
+                    teacher: newLocalExam.teacher || "",
+                    questions: newLocalExam.questions || [],
+                    createdAt: new Date()
+                };
+
+                // 3️⃣ Upload to Firestore
+                await addDoc(collection(db, "exams"), firestoreExam);
+                successCount++;
+            }
+
+            showToast(`Bulk upload successful! ${successCount} exams uploaded.`, "success");
+            renderExamManagementTable();
+            updateTables();
+            updateStats();
+
+        } catch (err) {
+            console.error("Bulk upload error:", err);
+            showToast("Error reading or uploading JSON file. Check console.", "error");
         }
+    };
+
+    reader.readAsText(file);
+    // allow same file to be picked again later
+    e.target.value = "";
+}
+
 
         function exportExams() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.db.exams));
@@ -3056,64 +3135,69 @@
              }
         }
 
-        function renderUserTable(tbody, userList, showAll) {
-            tbody.innerHTML = '';
-            const usersToShow = showAll ? userList : userList.slice(0, 3);
+       function renderUserTable(tbody, userList, showAll) {
+    tbody.innerHTML = '';
+    const usersToShow = showAll ? userList : userList.slice(0, 3);
 
-            if (usersToShow.length === 0) {
-                const colSpan = (tbody.id === "usersTableBody") ? 4 : 5;
-                tbody.innerHTML = `<tr class="empty-state-row"><td colspan="${colSpan}"><i class="fas fa-user-slash"></i>No users found.</td></tr>`;
-                return;
+    const isDashboardTable = (tbody === usersTableBody);
+
+    if (usersToShow.length === 0) {
+        const colSpan = isDashboardTable ? 4 : 5;
+        tbody.innerHTML = `<tr class="empty-state-row"><td colspan="${colSpan}"><i class="fas fa-user-slash"></i>No users found.</td></tr>`;
+        return;
+    }
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    usersToShow.forEach(user => {
+        const row = document.createElement('tr');
+        const userStatus = user.status || 'active';
+        const statusClass = userStatus === 'active' ? 'status-approved' : 'status-deactivated';
+        const statusText = userStatus === 'active' ? 'Active' : 'Deactivated';
+
+        if (isDashboardTable) {
+            // Dashboard user list (no action buttons)
+            row.innerHTML = `
+                <td data-label="Name">${user.name}</td>
+                <td data-label="Role">${user.role}</td>
+                <td data-label="Joined">${formatDate(user.joinedDate)}</td>
+                <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
+            `;
+        } else {
+            // Manage Users table with actions
+            let statusButton;
+            if (userStatus === 'active') {
+                statusButton = `<button class="action-btn deactivate-user" data-id="${user.id}" title="Deactivate User"><i class="fas fa-user-slash"></i> Deactivate</button>`;
+            } else {
+                statusButton = `<button class="action-btn activate-user" data-id="${user.id}" title="Activate User"><i class="fas fa-user-check"></i> Activate</button>`;
             }
-            
-            const formatDate = (dateString) => {
-                const date = new Date(dateString);
-                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-            };
 
-            usersToShow.forEach(user => {
-                const row = document.createElement('tr');
-                const userStatus = user.status || 'active';
-                const statusClass = userStatus === 'active' ? 'status-approved' : 'status-deactivated';
-                const statusText = userStatus === 'active' ? 'Active' : 'Deactivated';
-                
-                if (tbody.id === "usersTableBody") {
-                    row.innerHTML = `
-                        <td data-label="Name">${user.name}</td>
-                        <td data-label="Role">${user.role}</td>
-                        <td data-label="Joined">${formatDate(user.joinedDate)}</td>
-                        <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
-                    `;
-                } 
-                else {
-                    let statusButton;
-                    if (userStatus === 'active') {
-                        statusButton = `<button class="action-btn deactivate-user" data-id="${user.id}" title="Deactivate User"><i class="fas fa-user-slash"></i> Deactivate</button>`;
-                    } else {
-                        statusButton = `<button class="action-btn activate-user" data-id="${user.id}" title="Activate User"><i class="fas fa-user-check"></i> Activate</button>`;
-                    }
+            const adminButton = (state.currentUser.role === 'admin' && user.id !== state.currentUser.id) ? `
+                <div class="action-wrapper">
+                    <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="action-buttons">
+                        <button class="action-btn edit-user" data-id="${user.id}" title="Edit User"><i class="fas fa-edit"></i> Edit User</button>
+                        ${statusButton}
+                    </div>
+                </div>
+            ` : '';
 
-                    const adminButton = (state.currentUser.role === 'admin' && user.id !== state.currentUser.id) ? `
-                        <div class="action-wrapper">
-                             <button class="mobile-menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
-                             <div class="action-buttons">
-                                 <button class="action-btn edit-user" data-id="${user.id}" title="Edit User"><i class="fas fa-edit"></i> Edit User</button>
-                                 ${statusButton}
-                             </div>
-                        </div>
-                    ` : '';
-                    
-                    row.innerHTML = `
-                        <td data-label="Name" style="font-weight: 600;">${user.name} ${user.id === state.currentUser.id ? '(You)' : ''}</td>
-                        <td data-label="Email"><span style="font-size: 0.85rem;">${user.email}</span></td>
-                        <td data-label="Role"><span class="role-badge role-${user.role}">${user.role}</span></td>
-                        <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
-                        <td data-label="Actions" class="admin-action-cell">${adminButton}</td>
-                    `;
-                }
-                tbody.appendChild(row);
-            });
+            row.innerHTML = `
+                <td data-label="Name" style="font-weight: 600;">${user.name} ${user.id === state.currentUser.id ? '(You)' : ''}</td>
+                <td data-label="Email"><span style="font-size: 0.85rem;">${user.email}</span></td>
+                <td data-label="Role"><span class="role-badge role-${user.role}">${user.role}</span></td>
+                <td data-label="Status"><span class="status ${statusClass}">${statusText}</span></td>
+                <td data-label="Actions" class="admin-action-cell">${adminButton}</td>
+            `;
         }
+
+        tbody.appendChild(row);
+    });
+}
+
         
         function renderDashboardUserTable() {
             const allUsers = state.db.users.sort((a, b) => new Date(b.joinedDate) - new Date(a.joinedDate)); 
@@ -3139,7 +3223,7 @@
             
             showAllManageUsersBtn.style.display = (filteredUsers.length > 3) ? 'flex' : 'none';
         }
-
+// part -4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         function handleCreateExam(e) {
             e.preventDefault();
             const newExam = state.db.createExam({
@@ -3220,82 +3304,145 @@
             switchPage('takeExam');
         }
 
-        function loadQuestion(index) {
-            if (!state.currentExam) return;
-            const q = state.currentExam.questions[index];
-            const qType = q.type || 'single';
-            
-            document.getElementById('questionText').textContent = q.question;
-            document.getElementById('currentQuestion').textContent = index + 1;
-            examOptionsContainer.innerHTML = '';
-            
-            switch(qType) {
-                case 'single':
-                    q.options.forEach((optionText, i) => {
-                        const div = document.createElement('div'); 
-                        div.className = 'option'; 
-                        div.dataset.index = i;
-                        div.innerHTML = `<input type="radio" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
-                        examOptionsContainer.appendChild(div);
-                        if (state.userAnswers[index] === i) { 
-                            div.querySelector('input').checked = true; 
-                            div.classList.add('selected'); 
-                        }
-                    });
-                    break;
-                case 'multiple':
-                    q.options.forEach((optionText, i) => {
-                        const div = document.createElement('div'); 
-                        div.className = 'option'; 
-                        div.dataset.index = i;
-                        div.innerHTML = `<input type="checkbox" name="answer" value="${i}" id="option${i}"><label for="option${i}">${optionText}</label>`;
-                        examOptionsContainer.appendChild(div);
-                        if (state.userAnswers[index] && state.userAnswers[index][i]) {
-                            div.querySelector('input').checked = true; 
-                            div.classList.add('selected');
-                        }
-                    });
-                    break;
-                case 'text':
-                    examOptionsContainer.innerHTML = `
-                        <div class="form-group">
-                            <label>Your Answer:</label>
-                            <textarea class="form-control answer-textarea" id="essayAnswerInput"></textarea>
-                        </div>`;
-                    if (state.userAnswers[index]) {
-                        document.getElementById('essayAnswerInput').value = state.userAnswers[index];
-                    }
-                    break;
+       function loadQuestion(index) {
+    if (!state.currentExam) return;
+    const q = state.currentExam.questions[index];
+    const qType = q.type || 'single';
+
+    document.getElementById('questionText').textContent = q.question;
+    document.getElementById('currentQuestion').textContent = index + 1;
+    examOptionsContainer.innerHTML = '';
+
+    switch (qType) {
+        case 'single':
+            q.options.forEach((optionText, i) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.dataset.index = i;
+                div.innerHTML = `
+                    <input type="radio" name="answer" value="${i}" id="option${i}">
+                    <label for="option${i}">${optionText}</label>
+                `;
+                examOptionsContainer.appendChild(div);
+                if (state.userAnswers[index] === i) {
+                    div.querySelector('input').checked = true;
+                    div.classList.add('selected');
+                }
+            });
+            break;
+
+        case 'multiple':
+            q.options.forEach((optionText, i) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.dataset.index = i;
+                div.innerHTML = `
+                    <input type="checkbox" name="answer" value="${i}" id="option${i}">
+                    <label for="option${i}">${optionText}</label>
+                `;
+                examOptionsContainer.appendChild(div);
+                if (state.userAnswers[index] && state.userAnswers[index][i]) {
+                    div.querySelector('input').checked = true;
+                    div.classList.add('selected');
+                }
+            });
+            break;
+
+        case 'truefalse':
+            ['true', 'false'].forEach((val, i) => {
+                const labelText = val === 'true' ? 'True' : 'False';
+                const div = document.createElement('div');
+                div.className = 'option';
+                const id = `optionTF${i}`;
+                div.innerHTML = `
+                    <input type="radio" name="answerTF" value="${val}" id="${id}">
+                    <label for="${id}">${labelText}</label>
+                `;
+                examOptionsContainer.appendChild(div);
+                if (state.userAnswers[index] === val) {
+                    div.querySelector('input').checked = true;
+                    div.classList.add('selected');
+                }
+            });
+            break;
+
+        case 'essay':
+            examOptionsContainer.innerHTML = `
+                <div class="form-group">
+                    <label>Your Answer:</label>
+                    <textarea class="form-control answer-textarea" id="essayAnswerInput"></textarea>
+                </div>
+            `;
+            if (state.userAnswers[index]) {
+                document.getElementById('essayAnswerInput').value = state.userAnswers[index];
             }
-            
-            prevQuestionBtn.disabled = index === 0;
-            
-            const isLast = index === state.currentExam.questions.length - 1;
-            nextQuestionBtn.classList.toggle('hidden', isLast);
-            submitExamBtn.classList.toggle('hidden', !isLast);
-        }
-        
-        function saveAnswer() {
-            if(state.isPreviewMode) return;
-            
-            const qType = state.currentExam.questions[state.currentQuestionIndex].type || 'single';
-            
-            switch(qType) {
-                case 'single':
-                    const selectedSingle = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
-                    if (selectedSingle) state.userAnswers[state.currentQuestionIndex] = parseInt(selectedSingle.value);
-                    break;
-                case 'multiple':
-                    const selectedMultiple = document.querySelectorAll('#examOptionsContainer input[type="checkbox"]');
-                    const answers = Array.from(selectedMultiple).map(cb => cb.checked);
-                    state.userAnswers[state.currentQuestionIndex] = answers;
-                    break;
-                case 'text':
-                    const essayInput = document.getElementById('essayAnswerInput');
-                    if (essayInput) state.userAnswers[state.currentQuestionIndex] = essayInput.value;
-                    break;
+            break;
+
+        default:
+            // Fallback to essay style if type is unknown
+            examOptionsContainer.innerHTML = `
+                <div class="form-group">
+                    <label>Your Answer:</label>
+                    <textarea class="form-control answer-textarea" id="essayAnswerInput"></textarea>
+                </div>
+            `;
+            if (state.userAnswers[index]) {
+                document.getElementById('essayAnswerInput').value = state.userAnswers[index];
             }
+            break;
+    }
+
+    prevQuestionBtn.disabled = index === 0;
+
+    const isLast = index === state.currentExam.questions.length - 1;
+    nextQuestionBtn.classList.toggle('hidden', isLast);
+    submitExamBtn.classList.toggle('hidden', !isLast);
+}
+
+function saveAnswer() {
+    if (state.isPreviewMode) return;
+
+    const q = state.currentExam.questions[state.currentQuestionIndex];
+    const qType = q.type || 'single';
+
+    switch (qType) {
+        case 'single': {
+            const selectedSingle = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
+            if (selectedSingle) {
+                state.userAnswers[state.currentQuestionIndex] = parseInt(selectedSingle.value);
+            }
+            break;
         }
+        case 'multiple': {
+            const selectedMultiple = document.querySelectorAll('#examOptionsContainer input[type="checkbox"]');
+            const answers = Array.from(selectedMultiple).map(cb => cb.checked);
+            state.userAnswers[state.currentQuestionIndex] = answers;
+            break;
+        }
+        case 'truefalse': {
+            const selectedTF = document.querySelector('#examOptionsContainer input[type="radio"]:checked');
+            if (selectedTF) {
+                state.userAnswers[state.currentQuestionIndex] = selectedTF.value; // "true" or "false"
+            }
+            break;
+        }
+        case 'essay': {
+            const essayInput = document.getElementById('essayAnswerInput');
+            if (essayInput) {
+                state.userAnswers[state.currentQuestionIndex] = essayInput.value;
+            }
+            break;
+        }
+        default: {
+            const essayInput = document.getElementById('essayAnswerInput');
+            if (essayInput) {
+                state.userAnswers[state.currentQuestionIndex] = essayInput.value;
+            }
+            break;
+        }
+    }
+}
+
 
         function handleNextQuestion() { saveAnswer(); if (state.currentQuestionIndex < state.currentExam.questions.length - 1) { state.currentQuestionIndex++; loadQuestion(state.currentQuestionIndex); }}
         function handlePrevQuestion() { saveAnswer(); if (state.currentQuestionIndex > 0) { state.currentQuestionIndex--; loadQuestion(state.currentQuestionIndex); }}
@@ -3314,55 +3461,71 @@
                 }
             }, 1000);
         }
+function handleSubmitExam() {
+    saveAnswer();
+    if (state.examTimer) clearInterval(state.examTimer);
+    if (!state.currentExam) return;
 
-        function handleSubmitExam() {
-            saveAnswer(); 
-            if (state.examTimer) clearInterval(state.examTimer);
-            if (!state.currentExam) return;
-            
-            if(state.isPreviewMode) {
-                handleBackToDashboard();
-                showToast("Preview finished.", "info");
-                return;
-            }
+    if (state.isPreviewMode) {
+        handleBackToDashboard();
+        showToast("Preview finished.", "info");
+        return;
+    }
 
-            let score = 0; 
-            let totalAutoGraded = 0;
-            
-            state.userAnswers.forEach((userAnswer, i) => {
-                const q = state.currentExam.questions[i];
-                const qType = q.type || 'single';
-                
-                const normalize = (val) => val === null || val === undefined ? null : String(val).toLowerCase();
+    let score = 0;
+    let totalAutoGraded = 0;
+
+    state.userAnswers.forEach((userAnswer, i) => {
+        const q = state.currentExam.questions[i];
+        const qType = q.type || 'single';
+
+        const normalize = (val) =>
+            val === null || val === undefined ? null : String(val).toLowerCase();
+
+        switch (qType) {
+            case 'single': {
+                totalAutoGraded++;
                 const userAnswerNorm = normalize(userAnswer);
                 const correctAnswerNorm = normalize(q.correctAnswer);
-
-                switch(qType) {
-                    case 'single':
-                        totalAutoGraded++;
-                        if (userAnswerNorm == correctAnswerNorm) score++; 
-                        break;
-                    case 'multiple':
-                        // Simple grading for demo
-                        break;
+                if (userAnswerNorm === correctAnswerNorm) {
+                    score++;
                 }
-            });
-            
-            state.db.saveResult({
-                studentId: state.currentUser.id,
-                studentName: state.currentUser.name,
-                examId: state.currentExam.id,
-                examTitle: state.currentExam.title,
-                score: score,
-                total: totalAutoGraded
-            });
-            
-            document.getElementById('questionContainer').classList.add('hidden');
-            document.getElementById('activeExamControls').classList.add('hidden');
-            document.getElementById('resultDisplay').classList.remove('hidden');
-            document.getElementById('finalScoreDisplay').textContent = `${score} / ${totalAutoGraded}`;
-            showToast("Exam submitted successfully!", "success");
+                break;
+            }
+            case 'truefalse': {
+                totalAutoGraded++;
+                const userAnswerNorm = normalize(userAnswer);
+                const correctAnswerNorm = normalize(q.correctAnswer);
+                if (userAnswerNorm === correctAnswerNorm) {
+                    score++;
+                }
+                break;
+            }
+            case 'multiple':
+                // Still left simple/manual for now
+                break;
+            case 'essay':
+                // Not auto-graded in this version
+                break;
         }
+    });
+
+    state.db.saveResult({
+        studentId: state.currentUser.id,
+        studentName: state.currentUser.name,
+        examId: state.currentExam.id,
+        examTitle: state.currentExam.title,
+        score: score,
+        total: totalAutoGraded
+    });
+
+    document.getElementById('questionContainer').classList.add('hidden');
+    document.getElementById('activeExamControls').classList.add('hidden');
+    document.getElementById('resultDisplay').classList.remove('hidden');
+    document.getElementById('finalScoreDisplay').textContent = `${score} / ${totalAutoGraded}`;
+    showToast("Exam submitted successfully!", "success");
+}
+
         
         function openExamEditor(examId) {
             const exam = state.db.findExamById(examId); if (!exam) return;
@@ -3443,7 +3606,7 @@
             
             container.appendChild(div);
         }
-
+// Part 4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXxx
         function renderQuestionList() {
             const exam = state.db.findExamById(state.editingExamId); if (!exam) return;
             questionList.innerHTML = ''; 
@@ -3727,7 +3890,36 @@
             document.addEventListener('DOMContentLoaded', init);
         } else {
             init(); 
-        }
-    </script>
+         }
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBtL_WitOLaxG2xfYjXnHBVGG3Gwh2uqGE",
+    authDomain: "exam-app-e-awa.firebaseapp.com",
+    projectId: "exam-app-e-awa",
+    storageBucket: "exam-app-e-awa.firebasestorage.app",
+    messagingSenderId: "238629933782",
+    appId: "1:238629933782:web:5c768009dffec0644c2f77"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🚀 FIX: Expose properly to the window
+window.db = db;
+window.addDoc = addDoc;
+window.collection = collection;
+
+</script>
+
 </body>
 </html>
